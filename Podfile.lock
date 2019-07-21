@@ -1,0 +1,35 @@
+PODS:
+  - Alamofire (4.8.2)
+  - CryptoSwift (1.0.0)
+  - HandyJSON (5.0.0-beta)
+  - PromiseKit/Alamofire (6.2.8):
+    - Alamofire (~> 4.0)
+    - PromiseKit/CorePromise
+  - PromiseKit/CorePromise (6.2.8)
+  - ReachabilitySwift (4.3.1)
+
+DEPENDENCIES:
+  - CryptoSwift
+  - HandyJSON (= 5.0.0-beta)
+  - PromiseKit/Alamofire
+  - PromiseKit/CorePromise (~> 6.2.1)
+  - ReachabilitySwift (~> 4.1)
+
+SPEC REPOS:
+  https://github.com/cocoapods/specs.git:
+    - Alamofire
+    - CryptoSwift
+    - HandyJSON
+    - PromiseKit
+    - ReachabilitySwift
+
+SPEC CHECKSUMS:
+  Alamofire: ae5c501addb7afdbb13687d7f2f722c78734c2d3
+  CryptoSwift: d81eeaa59dc5a8d03720fe919a6fd07b51f7439f
+  HandyJSON: b84ac9904050a0897a0802092b7cb8808e0a4e9a
+  PromiseKit: 6788ce1a0ed5448b83d4aaf56b9fc49fb7647d32
+  ReachabilitySwift: 4032e2f59586e11e3b0ebe15b167abdd587a388b
+
+PODFILE CHECKSUM: 6d54d6c08e64d3f756c5e06a6f4497c3db922f88
+
+COCOAPODS: 1.6.1
