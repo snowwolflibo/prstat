@@ -199,6 +199,12 @@ struct UserPullModel {
         return pulls.filter { $0.state == .closed }.count
     }
     var average_reviewers_per_pull: Int = 0
+    var comments_per_lines: Int {
+        return changed_lines == 0 ? 0 : comments * 1000 / changed_lines
+    }
+    var review_comments_per_lines: Int {
+        return changed_lines == 0 ? 0 : review_comments * 1000 / changed_lines
+    }
 
     var output: String {
         return "user:\(user)\r\n" +
@@ -212,8 +218,10 @@ struct UserPullModel {
         "average_commits_per_pull:\(average_commits_per_pull)\t\t" +
         "average_comments_per_pull:\(average_comments_per_pull)\t\t" +
         "average_review_comments_per_pull:\(average_review_comments_per_pull)\t\t" +
-        "changed_lines:\(changed_lines)\t\t"
-//        "average_reviewers_per_pull:\(average_reviewers_per_pull)\t"
+        "changed_lines:\(changed_lines)\t\t" +
+        "comments_per_lines:\(comments_per_lines)/1000 lines\t\t" +
+        "review_comments_per_lines:\(review_comments_per_lines)/1000 lines\t\t" +
+        "average_reviewers_per_pull:\(average_reviewers_per_pull)\t"
     }
 
 }
