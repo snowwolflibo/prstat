@@ -39,7 +39,7 @@ class PullUtility {
         let today = Date()
         let calendar = Calendar(identifier: .gregorian)
         var dateRanges: [DateRange] = []
-        for i in 0..<5 {
+        for i in 0..<1 {
             var monthAdded = DateComponents()
             monthAdded.month = -i
             let newDate = calendar.date(byAdding: monthAdded, to: today)!
@@ -59,85 +59,124 @@ class PullUtility {
             }
             pullStat.userPulls[user]?.pulls.append(pull)
         })
-        print("generate pull stat completed. users: \(pullStat.userPulls.count); pulls: \(pullStat.pulls.count)")
+        print("generate pull stat (\(pullStat.dateRange.displayText)) completed. users: \(pullStat.userPulls.count); pulls: \(pullStat.pulls.count)")
+//        pullStat.writeToFile()
         fetchCommentsToOthers(pullStat: pullStat, allPulls: allPulls, type: .comment).done { _ in
-            fetchCommentsToOthers(pullStat: pullStat, allPulls: allPulls, type: .reviewComment).done({ _ in
+//            fetchCommentsToOthers(pullStat: pullStat, allPulls: allPulls, type: .reviewComment).done({ _ in
                 pullStat.writeToFile()
-            })
+//            })
         }
     }
 
-    private static func handleAllPagedPulls(dateRanges: [DateRange], pulls: [PullModel]) {
+    private static func handleAllPagedPulls(dateRanges: [DateRange], allPulls: [PullModel]) {
         dateRanges.forEach { dateRange in
-            let modelsInThisDateRange = pulls.filter {
-                $0.created_at.contains(dateRange.displayText)
+            autoreleasepool {
+                let modelsInThisDateRange = allPulls.filter {
+                    $0.created_at.contains(dateRange.displayText)
+                }
+                var fetchMultiplePromise: [Promise<[String:Any]>] = []
+                modelsInThisDateRange.forEach({ model in
+                    let promise = ApiRequest<[String:Any]>.getResponsePromise(url: model.url)
+                    fetchMultiplePromise.append(promise)
+                })
+                print("fetch all pulls in \(dateRange.displayText) (\(fetchMultiplePromise.count))")
+                when(fulfilled: fetchMultiplePromise).done({ array in
+                    print("fetch all pulls in \(dateRange.displayText) completed, array = \(array.count)")
+                    autoreleasepool {
+                        let detailModels = [PullModel].deserialize(from: array)!.compactMap { $0 }
+                        handleDateRangePulls(dateRangePulls: DateRangePullsModel(dateRange: dateRange, pulls: detailModels), allPulls: allPulls)
+                    }
+                }).catch({ error in
+                    print(error)
+                })
             }
-            var fetchMultiplePromise: [Promise<[String:Any]>] = []
-            modelsInThisDateRange.forEach({ model in
-                let promise = ApiRequest<[String:Any]>.getResponsePromise(url: model.url)
-                fetchMultiplePromise.append(promise)
-            })
-            print("fetch all page of pulls(\(fetchMultiplePromise.count))")
-            when(fulfilled: fetchMultiplePromise).done({ array in
-                print("fetch all page of pulls completed, array = \(array.count)")
-                let detailModels = [PullModel].deserialize(from: array)!.compactMap { $0 }
-                handleDateRangePulls(dateRangePulls: DateRangePullsModel(dateRange: dateRange, pulls: detailModels), allPulls: pulls)
-            }).catch({ error in
-                print(error)
-            })
         }
     }
 
     // MARK: Fetchers
 
     private static func fetchAllPulls(dateRanges: [DateRange]) {
+        print("begin fetch all pulls==============")
         fetchAllPagedPulls(firstPage: 1, allPagedPulls: AllPagedPullsModel()) { pulls in
-            handleAllPagedPulls(dateRanges: dateRanges, pulls: pulls)
+            print("end fetch all pulls \(pulls.count)==============")
+            handleAllPagedPulls(dateRanges: dateRanges, allPulls: pulls)
         }
     }
 
     private static func fetchAllPagedPulls(firstPage: Int = 1, allPagedPulls: AllPagedPullsModel, completionHandler: @escaping PullsAction) {
         let url = "https://api.github.com/repos/zillyinc/tellus-ios/pulls?state=all&sort=created&direction=desc&page=\(firstPage)"
         _ = ApiRequest<[Any]>.getResponsePromise(url: url).done { array in
-            let models = [PullModel].deserialize(from: array)!.compactMap { $0 }
-            allPagedPulls.pulls += models
-            let action: String
-            if models.count < pageSize {
-                completionHandler(allPagedPulls.pulls)
-                action = "complete"
-            } else {
-                fetchAllPagedPulls(firstPage: firstPage + 1, allPagedPulls: allPagedPulls, completionHandler: completionHandler)
-                action = "next page"
+            autoreleasepool {
+                let models = [PullModel].deserialize(from: array)!.compactMap { $0 }
+                allPagedPulls.pulls += models
+                let block = { (action: String) in
+                    print("Request:\(url); result count:\(models.count); \(action)")
+                }
+                if models.count < pageSize {
+                    block("complete")
+                    completionHandler(allPagedPulls.pulls)
+                } else {
+                    block("next page")
+                    fetchAllPagedPulls(firstPage: firstPage + 1, allPagedPulls: allPagedPulls, completionHandler: completionHandler)
+                }
             }
-            print("Request:\(url); result count:\(models.count); \(action)")
         }
     }
 
     // MARK: Fetchers - Comments
 
+    private static func pick(from array: [PullModel], page: Int, pageSize: Int) -> [PullModel] {
+        let start = pageSize * page
+        let end = min(array.count, pageSize * (page + 1))
+        var result: [PullModel] = []
+        print("pick pull from \(start) to \(end - 1)")
+        for i in start..<end {
+            result.append(array[i])
+        }
+        return result
+    }
+
     private static func fetchCommentsToOthers(pullStat: PullStat, allPulls: [PullModel], type: CommentType) -> Promise<Bool> {
         return Promise<Bool> { seal in
+            print("fetch comments to others - \(type.rawValue) (\(allPulls.count))")
+            fetchCommentsToOthersWithBatch(pullStat: pullStat, type: type, allPulls: allPulls, page: 0).done({ _ in
+                seal.fulfill(true)
+            })
+        }
+    }
+
+    private static let allPagedCommentsLock = NSLock()
+    private static let commentsAddedLock = NSLock()
+    private static func fetchCommentsToOthersWithBatch(pullStat: PullStat, type: CommentType, allPulls: [PullModel], page: Int) -> Promise<Bool> {
+        return Promise<Bool> { seal in
+            let pageSize = 1
+            let pageCount = (allPulls.count - 1) / pageSize + 1
+            if page >= pageCount {
+                seal.fulfill(true)
+            }
+            let pickedPulls = pick(from: allPulls, page: page, pageSize: pageSize)
             var fetchMultiplePromise: [Promise<[CommentModel]>] = []
-            let allPagedComments = AllPagedCommentsModel()
-            allPulls.forEach({ model in
-                let promise = fetchCommentsToOthersOfOnePull(url: model.commentsUrl(type: type), allPagedComments: allPagedComments)
+            pickedPulls.forEach({ model in
+                let promise = fetchCommentsToOthersOfOnePull(url: model.commentsUrl(type: type), allPagedComments: AllPagedCommentsModel())
                 fetchMultiplePromise.append(promise)
             })
-            print("fetch comments to others - \(type.rawValue) (\(fetchMultiplePromise.count))")
+
             when(fulfilled: fetchMultiplePromise).done({ array in
-                print("fetch comments to others - \(type.rawValue) completed. array: (\(array.count))")
-                let allComments = [CommentModel].deserialize(from: array)!.compactMap { $0 }
+                let allComments = array.flatMap { $0 }
+                print("fetch comments to others - \(type.rawValue) completed. allComments: (\(allComments.count))")
                 var userPulls = pullStat.userPulls
                 allComments.forEach({ comment in
                     let user = comment.user.login
+                    commentsAddedLock.lock()
                     if userPulls[user] == nil {
                         var userPull = UserPullModel()
                         userPull.user = user
                         userPulls[user] = userPull
                     }
                     userPulls[user]!.comments_to_others[type]! += 1
+                    commentsAddedLock.unlock()
                 })
-                seal.fulfill(true)
+                fetchCommentsToOthersWithBatch(pullStat: pullStat, type: type, allPulls: allPulls, page: page + 1)
             }).catch({ error in
                 print(error)
                 seal.reject(error)
@@ -150,16 +189,19 @@ class PullUtility {
             let urlWithPage = url + "?page=\(firstPage)"
             ApiRequest<[Any]>.getResponsePromise(url: urlWithPage).done { array in
                 let models = [CommentModel].deserialize(from: array)!.compactMap { $0 }
+                allPagedCommentsLock.lock()
                 allPagedComments.comments += models
-                let action: String
-                if models.count < pageSize {
-                    seal.fulfill(allPagedComments.comments)
-                    action = "complete"
-                } else {
-                    fetchCommentsToOthersOfOnePull(firstPage: firstPage + 1, url: url, allPagedComments: allPagedComments)
-                    action = "next page"
+                allPagedCommentsLock.unlock()
+                let block = { (action: String) in
+                    print("Request:\(url); result count:\(models.count); \(action)")
                 }
-                print("Request:\(url); result count:\(models.count); \(action)")
+                if models.count < pageSize {
+                    block("complete")
+                    seal.fulfill(allPagedComments.comments)
+                } else {
+                    block("next page")
+                    fetchCommentsToOthersOfOnePull(firstPage: firstPage + 1, url: url, allPagedComments: allPagedComments)
+                }
             }
         }
     }
