@@ -13,17 +13,30 @@ enum PullState: String, HandyJSONEnum {
     case closed
 }
 
+enum CommentType: String {
+    case comment, reviewComment
+}
+
+struct DateRange {
+    var year: Int = 1970
+    var month: Int = 1
+    var displayText: String {
+        let monthWithPaddingZero = month < 10 ? "0\(month)" : "\(month)"
+        return "\(year)-\(monthWithPaddingZero)"
+    }
+}
+
 struct UserModel: HandyJSON {
     var login: String = ""
 }
 
 struct PullModel: HandyJSON {
-    var number: Int = 0 // filled in all pulls
-    var user: UserModel? // filled in all pulls
-    var state: PullState = .open // filled in all pulls
-    var title: String = "" // filled in all pulls
-    var created_at: String = "" // filled in all pulls
-    var updated_at: String = "" // filled in all pulls
+    var number: Int = 0
+    var user: UserModel?
+    var state: PullState = .open
+    var title: String = ""
+    var created_at: String = ""
+    var updated_at: String = ""
     var merged_at: String?
     var duration: Int {
         let createdDate = date(from: created_at)
@@ -35,26 +48,26 @@ struct PullModel: HandyJSON {
         return "\(duration) days"
     }
     var url: String = ""
-    var commits_url: String = "" // filled in all pulls
-    var review_comments_url: String = "" // filled in all pulls
-    var comments_url: String = "" // filled in all pulls
-    var merged: Bool = false // filled in one pull
-    var comments: Int = 0 // filled in one pull
-    var review_comments: Int = 0 // filled in one pull
-    var commits: Int = 0 // filled in one pull
-    var additions: Int = 0 // filled in one pull
-    var deletions: Int = 0 // filled in one pull
+    var commits_url: String = ""
+    var review_comments_url: String = ""
+    var comments_url: String = ""
+    func commentsUrl(type: CommentType) -> String {
+        return type == .comment ? comments_url : review_comments_url
+    }
+    var merged: Bool = false
+    var comments: Int = 0
+    var review_comments: Int = 0
+    var commits: Int = 0
+    var additions: Int = 0
+    var deletions: Int = 0
     var changed_lines: Int {
         return additions + deletions
     }
-    var changed_files: Int = 0 // filled in one pull
-
+    var changed_files: Int = 0
     var titleOutput: String {
         return "title:\(title)(\(url))\tuser:\(user?.login ?? "")"
     }
-
     var detailOutput: String {
-
         return "state:\(state)\t" +
         "created_at:\(created_at)\t\t" +
         "merged:\(merged)\t" +
@@ -77,25 +90,11 @@ struct PullModel: HandyJSON {
         let date = formatter.date(from: dateString)
         return date!
     }
-
-//    func fill(byDetail detail: PullModel) {
-//        merged = detail.merged
-//        comments = detail.comments
-//        review_comments = detail.review_comments
-//        commits = detail.commits
-//        additions = detail.additions
-//        deletions = detail.deletions
-//        changed_files = detail.changed_files
-//    }
 }
 
-struct DateRange {
-    var year: Int = 1970
-    var month: Int = 1
-    var displayText: String {
-        let monthWithPaddingZero = month < 10 ? "0\(month)" : "\(month)"
-        return "\(year)-\(monthWithPaddingZero)"
-    }
+struct CommentModel: HandyJSON {
+    var user: UserModel!
+    var created_at: String = ""
 }
 
 struct PullStat {
@@ -205,6 +204,10 @@ struct UserPullModel {
     var review_comments_per_lines: Int {
         return changed_lines == 0 ? 0 : review_comments * 1000 / changed_lines
     }
+    var comments_to_others: [CommentType:Int] = [
+        .comment: 0,
+        .reviewComment: 0
+    ]
 
     var output: String {
         return "user:\(user)\r\n" +
@@ -221,7 +224,8 @@ struct UserPullModel {
         "changed_lines:\(changed_lines)\t\t" +
         "comments_per_lines:\(comments_per_lines)/1000 lines\t\t" +
         "review_comments_per_lines:\(review_comments_per_lines)/1000 lines\t\t" +
-        "average_reviewers_per_pull:\(average_reviewers_per_pull)\t"
+        "average_reviewers_per_pull:\(average_reviewers_per_pull)\t" +
+        "comments_to_others:\(comments_to_others[.comment]!)\t" +
+        "review_comments_to_others:\(comments_to_others[.reviewComment]!)\t"
     }
-
 }
