@@ -45,14 +45,14 @@ struct PullModel: HandyJSON {
 
     var detailOutput: String {
         return "state:\(state)\t" +
-        "created_at:\(created_at)\t" +
+        "created_at:\(created_at)\t\t" +
         "merged:\(merged)\t" +
         "commits:\(commits)\t" +
         "comments:\(comments)\t" +
-        "review_comments:\(review_comments)\t" +
-        "additions:\(additions)\t" +
-        "deletions:\(deletions)\t" +
-        "changed_lines:\(changed_lines)\t" +
+        "review_comments:\(review_comments)\t\t" +
+        "additions:\(additions)\t\t\t" +
+        "deletions:\(deletions)\t\t" +
+        "changed_lines:\(changed_lines)\t\t" +
         "changed_files:\(changed_files)\t"
     }
 
@@ -83,15 +83,17 @@ struct PullStat {
 
     private var output: String {
         var result = ""
-        result = addLine(original: result, newLine: dateRange.displayText)
-        result = addLine(original: result, newLine: "=============User Pulls Stat==============")
+        result = addLine(original: result, newLine: "Stat Month: \(dateRange.displayText)")
+        result = addLine(original: result, newLine: "\r\n=============User Pulls Stat (\(userPulls.count))==============\r\n")
         userPulls.values.forEach {
             result = addLine(original: result, newLine: $0.output)
+            result = addLine(original: result, newLine: "")
         }
-        result = addLine(original: result, newLine: "=============Pulls Stat==============")
+        result = addLine(original: result, newLine: "\r\n=============Pulls Stat (\(pulls.count))==============\r\n")
         pulls.forEach {
             result = addLine(original: result, newLine: $0.titleOutput)
             result = addLine(original: result, newLine: $0.detailOutput)
+            result = addLine(original: result, newLine: "")
         }
         return result
     }
@@ -160,17 +162,17 @@ struct UserPullModel {
     var average_reviewers_per_pull: Int = 0
 
     var output: String {
-        return "user:\(user)\t" +
-        "created_pulls:\(created_pulls)\t" +
+        return "user:\(user)\r\n" +
+        "created_pulls:\(created_pulls)\t\t" +
         "open_pulls:\(open_pulls)\t" +
         "closed_pulls:\(closed_pulls)\t" +
         "commits:\(commits)\t" +
         "comments:\(comments)\t" +
         "review_comments:\(review_comments)\t" +
-        "average_commits_per_pull:\(average_commits_per_pull)\t" +
-        "average_comments_per_pull:\(average_comments_per_pull)\t" +
-        "average_review_comments_per_pull:\(average_review_comments_per_pull)\t" +
-        "changed_lines:\(changed_lines)\t" +
+        "average_commits_per_pull:\(average_commits_per_pull)\t\t" +
+        "average_comments_per_pull:\(average_comments_per_pull)\t\t" +
+        "average_review_comments_per_pull:\(average_review_comments_per_pull)\t\t" +
+        "changed_lines:\(changed_lines)\t\t" +
         "average_reviewers_per_pull:\(average_reviewers_per_pull)\t"
     }
 

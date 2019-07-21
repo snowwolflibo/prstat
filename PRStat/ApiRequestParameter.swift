@@ -52,7 +52,7 @@ class ApiRequestParameter: NSObject {
     }
 
     func getURL() -> String {
-        let url2 = url + "?" + getQueryString()
-        return url2
+        let queryString = getQueryString()
+        return queryString.isEmpty ? url : url + "?" + queryString
     }
 }

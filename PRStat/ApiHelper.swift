@@ -31,7 +31,6 @@ class ApiRequest<ModelType> {
     }
 
     public static func getResponsePromise(url: String, method: HTTPMethod = .get, body: Parameters? = nil, querys: Parameters? = nil) -> Promise<ModelType> {
-
         return getResponsePromiseBase(url: url, method: method, body: body, querys: querys, requestAlamofireAction: { (requestParameter) -> DataRequest in
             return Alamofire.request(requestParameter.getURL(), method: method, parameters: requestParameter.body, encoding: URLEncoding.default, headers: requestParameter.headers)
         })
@@ -54,7 +53,6 @@ class ApiRequest<ModelType> {
 
     @discardableResult
     static func getResponsePromiseBase(url: String, method: HTTPMethod, body: Parameters?, querys: Parameters?, requestAlamofireAction: @escaping (_ requestParameter:  ApiRequestParameter) -> DataRequest) -> Promise<ModelType> {
-
         let requestParameter = getRequestParameter(url: url, body: body, querys: querys)
         let dataRequest = requestAlamofireAction(requestParameter)
         let promise = firstly {
@@ -72,20 +70,6 @@ class ApiRequest<ModelType> {
     }
 
     private static func resovleJSONToResponse(json: Any) -> ModelType {
-//        let dic: Dictionary<String,Any>? = json as? Dictionary
-//
-//        LogUtility.log("从服务端返回的数据:\n\(String(describing: dic))")
-//        var res: ResponseType?
-//        do {
-//            res = try ResponseType.deserialize(from: dic)
-//        } catch {
-//            print("反序列化WSResponse出错：\n" + error.localizedDescription)
-//        }
-//        if res == nil {
-//            res = getErrorWSResponse(error: nil)
-//        }
-//        return res!
-
         let array: ModelType = json as! ModelType
 
         LogUtility.log("从服务端返回的数据:\n\(String(describing: array))")
