@@ -24,6 +24,16 @@ struct PullModel: HandyJSON {
     var title: String = "" // filled in all pulls
     var created_at: String = "" // filled in all pulls
     var updated_at: String = "" // filled in all pulls
+    var merged_at: String?
+    var duration: Int {
+        let createdDate = date(from: created_at)
+        let mergedDate = merged_at == nil ? Date() : date(from: merged_at!)
+        let days = mergedDate.timeIntervalSince(createdDate) / (3600 * 24)
+        return Int(days)
+    }
+    var durationString: String {
+        return "\(duration) days"
+    }
     var url: String = ""
     var commits_url: String = "" // filled in all pulls
     var review_comments_url: String = "" // filled in all pulls
@@ -44,9 +54,11 @@ struct PullModel: HandyJSON {
     }
 
     var detailOutput: String {
+
         return "state:\(state)\t" +
         "created_at:\(created_at)\t\t" +
         "merged:\(merged)\t" +
+        "duration:\(durationString)\t" +
         "commits:\(commits)\t" +
         "comments:\(comments)\t" +
         "review_comments:\(review_comments)\t\t" +
@@ -54,6 +66,16 @@ struct PullModel: HandyJSON {
         "deletions:\(deletions)\t\t" +
         "changed_lines:\(changed_lines)\t\t" +
         "changed_files:\(changed_files)\t"
+    }
+
+    private func date(from string: String) -> Date {
+        var dateString = string.replacingOccurrences(of: "T", with: " ")
+        dateString = dateString.replacingOccurrences(of: "Z", with: "")
+        let formatter = DateFormatter()
+        formatter.locale = Locale.init(identifier: "zh_CN")
+        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        let date = formatter.date(from: dateString)
+        return date!
     }
 
 //    func fill(byDetail detail: PullModel) {
@@ -84,13 +106,24 @@ struct PullStat {
     private var output: String {
         var result = ""
         result = addLine(original: result, newLine: "Stat Month: \(dateRange.displayText)")
+        let sortedUserPulls = userPulls.values.sorted { userPull1, userPull2 -> Bool in
+            return userPull1.user.compare(userPull2.user) == .orderedAscending
+        }
         result = addLine(original: result, newLine: "\r\n=============User Pulls Stat (\(userPulls.count))==============\r\n")
-        userPulls.values.forEach {
+        sortedUserPulls.forEach {
             result = addLine(original: result, newLine: $0.output)
             result = addLine(original: result, newLine: "")
         }
-        result = addLine(original: result, newLine: "\r\n=============Pulls Stat (\(pulls.count))==============\r\n")
-        pulls.forEach {
+        let sortedPulls = pulls.sorted { pull1, pull2 -> Bool in
+            let compareResult = pull1.user!.login.compare(pull2.user!.login)
+            if compareResult == .orderedSame {
+                return pull1.number > pull2.number
+            } else {
+                return compareResult == .orderedAscending
+            }
+        }
+        result = addLine(original: result, newLine: "\r\n=============Pulls Stat (\(sortedPulls.count))==============\r\n")
+        sortedPulls.forEach {
             result = addLine(original: result, newLine: $0.titleOutput)
             result = addLine(original: result, newLine: $0.detailOutput)
             result = addLine(original: result, newLine: "")
@@ -132,6 +165,12 @@ struct UserPullModel {
     var review_comments: Int {
         return pulls.reduce(0) { $0 + $1.review_comments }
     }
+    var average_duration_per_pull: Int {
+        return created_pulls == 0 ? 0 : pulls.reduce(0) { $0 + $1.duration } / created_pulls
+    }
+    var average_duration_per_pull_string: String {
+        return "\(average_duration_per_pull) days"
+    }
     var average_commits_per_pull: Int {
         return created_pulls == 0 ? 0 : commits / created_pulls
     }
@@ -169,11 +208,12 @@ struct UserPullModel {
         "commits:\(commits)\t" +
         "comments:\(comments)\t" +
         "review_comments:\(review_comments)\t" +
+        "average_duration_per_pull:\(average_duration_per_pull_string)\t" +
         "average_commits_per_pull:\(average_commits_per_pull)\t\t" +
         "average_comments_per_pull:\(average_comments_per_pull)\t\t" +
         "average_review_comments_per_pull:\(average_review_comments_per_pull)\t\t" +
-        "changed_lines:\(changed_lines)\t\t" +
-        "average_reviewers_per_pull:\(average_reviewers_per_pull)\t"
+        "changed_lines:\(changed_lines)\t\t"
+//        "average_reviewers_per_pull:\(average_reviewers_per_pull)\t"
     }
 
 }
