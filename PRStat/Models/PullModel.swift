@@ -119,6 +119,7 @@ class CommitModel: HandyJSON {
 
     struct Commit: HandyJSON {
         var message: String!
+        var comment_count: Int = 0
         var committer: Committer!
     }
 
@@ -138,8 +139,10 @@ class CommitModel: HandyJSON {
     var author: UserModel!
     var sha: String!
     var url: String!
+    var comments_url: String!
     var commit: Commit!
     var stats: Stats!
+    var review_comments: Int = 0
 
     required init() {
     }
@@ -172,7 +175,7 @@ class PullStat {
             let sortedUserPulls = userPullsOfThisType.values.sorted { userPull1, userPull2 -> Bool in
                 return userPull1.user.compare(userPull2.user) == .orderedAscending
             }
-            result = self.addLine(original: result, newLine: "\r\n=============User Pulls Stat - \(pullStatType.rawValue)==============\r\n")
+            result = self.addLine(original: result, newLine: "\r\n============= user pulls - \(pullStatType.rawValue) ==============\r\n")
             result = self.addLine(original: result, newLine: UserPullModel.outputTitles)
             sortedUserPulls.forEach {
                 result = self.addLine(original: result, newLine: $0.outputValues)
@@ -184,7 +187,7 @@ class PullStat {
         let sortedUserLinesAndComments = userLineAndComments.values.sorted { model1, model2 -> Bool in
             return model1.user.compare(model2.user) == .orderedAscending
         }
-        result = addLine(original: result, newLine: "\r\n=============User Lines and Comments Stat (\(userLineAndComments.count))==============\r\n")
+        result = addLine(original: result, newLine: "\r\n============= user lines and comments (\(userLineAndComments.count)) ==============\r\n")
         result = addLine(original: result, newLine: UserLineAndCommentModel.outputTitles)
         sortedUserLinesAndComments.forEach {
             result = addLine(original: result, newLine: $0.outputValues)
@@ -198,7 +201,7 @@ class PullStat {
                 return compareResult == .orderedAscending
             }
         }
-        result = addLine(original: result, newLine: "\r\n=============Pulls Stat (\(sortedPulls.count))==============\r\n")
+        result = addLine(original: result, newLine: "\r\n============= new pulls (\(sortedPulls.count))==============\r\n")
         sortedPulls.forEach {
             result = addLine(original: result, newLine: $0.titleOutput)
             result = addLine(original: result, newLine: $0.detailOutput)
@@ -322,8 +325,8 @@ struct UserPullModel {
         ("avg_pr_comments",20),
         ("avg_pr_rev_comments",25),
         ("lines",10),
-        ("lines_add",10),
-        ("lines_del",10),
+        ("lines_add",15),
+        ("lines_del",15),
         ("comments/1000 lines",25),
         ("rev_comments/1000 lines",25),
         ("avg_pr_reviews",20)
@@ -343,7 +346,10 @@ struct UserLineAndCommentModel {
     var lines: Int {
         return additions + deletions
     }
-    var review_commentds: Int = 0
+    var comment_count: Int = 0
+    var review_comments_per_lines: Int {
+        return lines == 0 ? 0 : comment_count * 1000 / lines
+    }
     var comments_to_others: [CommentType:Int] = [
         .comment: 0,
         .reviewComment: 0
@@ -357,7 +363,9 @@ struct UserLineAndCommentModel {
             "\(comments_to_others[.reviewComment]!)",
             "\(additions)",
             "\(deletions)",
-            "\(lines)"
+            "\(lines)",
+            "\(comment_count)",
+            "\(review_comments_per_lines)"
         ]
         var result = ""
         array.enumerated().forEach { (index, text) in
@@ -372,7 +380,9 @@ struct UserLineAndCommentModel {
         ("rev_comments_given",20),
         ("lines_add",15),
         ("lines_del",15),
-        ("lines",15)
+        ("lines",15),
+        ("rev_comments",20),
+        ("rev_comments/1000 lines",25),
     ]
 
     static var outputTitles: String {

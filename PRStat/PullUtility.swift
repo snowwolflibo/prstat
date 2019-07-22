@@ -127,8 +127,6 @@ class PullUtility {
                                 pullStats.forEach({ pullStat in
                                     pullStat.writeToFile()
                                 })
-                            }).catch({ error in
-                                print(error)
                             })
 //                            pullStats.forEach({ pullStat in
 //                                pullStat.writeToFile()
@@ -291,6 +289,7 @@ class PullUtility {
                             userLineAndComment.user = user
                             pullStat.userLineAndComments[user] = userLineAndComment
                         }
+                        pullStat.userLineAndComments[user]!.comment_count += commit.commit.comment_count
                         if !commit.commit.message.starts(with: "Merge branch") {
                             pullStat.userLineAndComments[user]!.additions += commit.stats?.additions ?? 0
                             pullStat.userLineAndComments[user]!.deletions += commit.stats?.deletions ?? 0
@@ -328,7 +327,9 @@ class PullUtility {
                 if models.count < pageSize {
                     block("completed")
                     fetchCommitsBySHA(commits: allPagedCommits.commits).done({ _ in
-                        seal.fulfill(allPagedCommits.commits)
+                        fetchCommitReviewComments(commits: allPagedCommits.commits).done({ _ in
+                            seal.fulfill(allPagedCommits.commits)
+                        })
                     }).catch({ error in
                         seal.reject(error)
                     })
@@ -347,6 +348,7 @@ class PullUtility {
         }
     }
 
+    // MARK: Fetcher - Commits - SHA
     private static func fetchCommitsBySHA(commits: [CommitModel]) -> Promise<Bool> {
         print("begin fetchCommitsBySHA")
         return Promise<Bool> { seal in
@@ -375,6 +377,45 @@ class PullUtility {
                     print("Request:\(commit.url!); \(stats.displayText)")
                 } else {
                     print("Request:\(commit.url!); return nil")
+                }
+                seal.fulfill(true)
+                }.catch({ error in
+                    print(error)
+                    seal.fulfill(true)
+                })
+        }
+    }
+
+    // MARK: Fetcher - Commits - Review Comments
+    private static func fetchCommitReviewComments(commits: [CommitModel]) -> Promise<Bool> {
+        print("begin fetchCommitReviewComments")
+        return Promise<Bool> { seal in
+            var fetchMultiplePromise: [Promise<Bool>] = []
+            commits.forEach({ model in
+                let promise = fetchCommitReviewComment(commit: model)
+                fetchMultiplePromise.append(promise)
+            })
+            when(fulfilled: fetchMultiplePromise).done { _ in
+                seal.fulfill(true)
+                }.catch({ error in
+                    print(error)
+                    seal.fulfill(true)
+                })
+        }
+    }
+
+
+    private static func fetchCommitReviewComment(commit: CommitModel) -> Promise<Bool>  {
+        return Promise<Bool> { seal in
+            let url = commit.comments_url!
+            ApiRequest<[Any]>.getResponsePromise(url: url).done { data in
+                if let models = [CommentModel].deserialize(from: data) {
+                    allPagedModelsLock.lock()
+                    commit.review_comments = models.compactMap { $0 }.count
+                    allPagedModelsLock.unlock()
+                    print("Request:\(url); commit.review_comments \(commit.review_comments)")
+                } else {
+                    print("Request:\(url); return nil")
                 }
                 seal.fulfill(true)
                 }.catch({ error in
