@@ -92,6 +92,23 @@ struct PullModel: HandyJSON {
         "changed_files:\(changed_files)\t"
     }
 
+
+//    var titleAndValues: [String:String] {
+//        return [
+//            "state": "\(state)",
+//            "created_at": "\(created_at)",
+//            "merged": "\(merged)",
+//            "duration": "\(durationString)",
+//            "commits": "\(commits)",
+//            "comments": "\(comments)",
+//            "review_comments": "\(review_comments)",
+//            "additions": "\(additions)",
+//            "deletions": "\(deletions)",
+//            "changed_lines": "\(changed_lines)",
+//            "changed_files": "\(changed_lines)",
+//        ]
+//    }
+
     private func date(from string: String) -> Date {
         var dateString = string.replacingOccurrences(of: "T", with: " ")
         dateString = dateString.replacingOccurrences(of: "Z", with: "")
@@ -126,8 +143,9 @@ class PullStat {
             return userPull1.user.compare(userPull2.user) == .orderedAscending
         }
         result = addLine(original: result, newLine: "\r\n=============User Pulls Stat (\(userPulls.count))==============\r\n")
+        result = addLine(original: result, newLine: UserPullModel.outputTitles)
         sortedUserPulls.forEach {
-            result = addLine(original: result, newLine: $0.output)
+            result = addLine(original: result, newLine: $0.outputValues)
             result = addLine(original: result, newLine: "")
         }
         let sortedPulls = pulls.sorted { pull1, pull2 -> Bool in
@@ -226,23 +244,49 @@ struct UserPullModel {
         .reviewComment: 0
     ]
 
-    var output: String {
-        return "user:\(user)\r\n" +
-        "created_pulls:\(created_pulls)\t" +
-        "open_pulls:\(open_pulls)\t" +
-        "closed_pulls:\(closed_pulls)\t" +
-        "commits:\(commits)\t" +
-        "comments:\(comments)\t" +
-        "review_comments:\(review_comments)\t" +
-        "average_duration_per_pull:\(average_duration_per_pull_string)\t" +
-        "average_commits_per_pull:\(average_commits_per_pull)\t" +
-        "average_comments_per_pull:\(average_comments_per_pull)\t" +
-        "average_review_comments_per_pull:\(average_review_comments_per_pull)\t" +
-        "changed_lines:\(changed_lines)\t" +
-        "comments_per_lines:\(comments_per_lines)/1000 lines\t" +
-        "review_comments_per_lines:\(review_comments_per_lines)/1000 lines\t" +
-        "average_reviews_per_pull:\(average_reviews_per_pull)\t" +
-        "comments_to_others:\(comments_to_others[.comment]!)\t" +
-        "review_comments_to_others:\(comments_to_others[.reviewComment]!)\t"
+    var outputValues: String {
+        return
+            "\(user)\t|\t" +
+                "\(created_pulls)\t|\t" +
+                "\(open_pulls)\t|\t" +
+                "\(closed_pulls)\t|\t" +
+                "\(commits)\t|\t" +
+                "\(comments)\t|\t" +
+                "\(review_comments)\t|\t" +
+                "\(average_duration_per_pull_string)\t|\t" +
+                "\(average_commits_per_pull)\t|\t" +
+                "\(average_comments_per_pull)\t|\t" +
+                "\(average_review_comments_per_pull)\t|\t" +
+                "\(changed_lines)\t|\t" +
+                "\(additions)\t|\t" +
+                "\(deletions)\t|\t" +
+                "\(comments_per_lines)\t|\t" +
+                "\(review_comments_per_lines)\t|\t" +
+                "\(average_reviews_per_pull)\t|\t" +
+                "\(comments_to_others[.comment]!)\t|\t" +
+        "\(comments_to_others[.reviewComment]!)";
+    }
+
+    static var outputTitles: String {
+        return "dev\t|\t" +
+            "prs\t|\t" +
+            "prs_open\t|\t" +
+            "prs_closed\t|\t" +
+            "commits\t|\t" +
+            "pr_comments\t|\t" +
+            "pr_rev_comments\t|\t" +
+            "avg_pr_duration\t|\t" +
+            "avg_pr_commits\t|\t" +
+            "avg_pr_comments\t|\t" +
+            "avg_pr_rev_comments\t|\t" +
+            "lines\t|\t" +
+            "lines_add\t|\t" +
+            "lines_del\t|\t" +
+            "comments/1000 lines\t|\t" +
+            "rev_comments/1000 lines\t|\t" +
+            "avg_pr_reviews\t|\t" +
+            "comments_given\t|\t" +
+        "rev_comments_given\t|\t";
     }
 }
+

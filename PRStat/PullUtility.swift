@@ -100,13 +100,16 @@ class PullUtility {
         fetchAllPagedPulls(repository: repository, firstPage: 1, allPagedPullSummaries: AllPagedPullSummarysModel()) { allPulls in
             print("end fetch all pulls \(allPulls.count)==============")
             fetchAllPullDetails(dateRanges: dateRanges, allPulls: allPulls).done({ pullStats in
-                fetchCommentsToOthers(pullStats: pullStats, allPulls: allPulls, type: .comment).done { _ in
-                    fetchCommentsToOthers(pullStats: pullStats, allPulls: allPulls, type: .reviewComment).done({ _ in
-                        pullStats.forEach({ pullStat in
-                            pullStat.writeToFile()
-                        })
-                    })
-                }
+//                fetchCommentsToOthers(pullStats: pullStats, allPulls: allPulls, type: .comment).done { _ in
+//                    fetchCommentsToOthers(pullStats: pullStats, allPulls: allPulls, type: .reviewComment).done({ _ in
+//                        pullStats.forEach({ pullStat in
+//                            pullStat.writeToFile()
+//                        })
+//                    })
+//                }
+                pullStats.forEach({ pullStat in
+                    pullStat.writeToFile()
+                })
             })
 
         }
