@@ -265,15 +265,15 @@ class PullUtility {
 
     private static func fetchCommitsWithBatch(pullStats: [PullStat], allPulls: [PullSummaryModel], page: Int) -> Promise<Bool> {
         return Promise<Bool> { seal in
-            let pageSize = 20
-            let pageCount = (allPulls.count - 1) / pageSize + 1
-            if page >= pageCount {
-                seal.fulfill(true)
-                return
-            }
-            let pickedPulls = pick(from: allPulls, page: page, pageSize: pageSize)
+//            let pageSize = 20
+//            let pageCount = (allPulls.count - 1) / pageSize + 1
+//            if page >= pageCount {
+//                seal.fulfill(true)
+//                return
+//            }
+//            let pickedPulls = pick(from: allPulls, page: page, pageSize: pageSize)
             var fetchMultiplePromise: [Promise<[CommitModel]>] = []
-            pickedPulls.forEach({ model in
+            allPulls.forEach({ model in
                 let promise = fetchCommitsOfOnePull(url: model.commits_url, allPagedCommits: AllPagedCommitsModel())
                 fetchMultiplePromise.append(promise)
             })
@@ -291,17 +291,21 @@ class PullUtility {
                             userLineAndComment.user = user
                             pullStat.userLineAndComments[user] = userLineAndComment
                         }
-                        pullStat.userLineAndComments[user]!.additions += commit.stats?.additions ?? 0
-                        pullStat.userLineAndComments[user]!.deletions += commit.stats?.deletions ?? 0
+                        if !commit.commit.message.starts(with: "Merge branch") {
+                            pullStat.userLineAndComments[user]!.additions += commit.stats?.additions ?? 0
+                            pullStat.userLineAndComments[user]!.deletions += commit.stats?.deletions ?? 0
+                            print("lines \(user) additions = \(pullStat.userLineAndComments[user]!.additions) deletions = \(pullStat.userLineAndComments[user]!.deletions)\t\t added: \(commit.stats?.deletions ?? 0)\t\t \(commit.stats?.additions ?? 0)\t\t \(commit.sha!)")
+                        }
                     }
                     modelsAddedLock.unlock()
                 })
-                fetchCommitsWithBatch(pullStats: pullStats, allPulls: allPulls, page: page + 1).done({ result in
-                    seal.fulfill(result)
-                }).catch({ error in
-                    print(error)
-                    seal.fulfill(true)
-                })
+                seal.fulfill(true)
+//                fetchCommitsWithBatch(pullStats: pullStats, allPulls: allPulls, page: page + 1).done({ result in
+//                    seal.fulfill(result)
+//                }).catch({ error in
+//                    print(error)
+//                    seal.fulfill(true)
+//                })
             }).catch({ error in
                 print(error)
                 seal.fulfill(true)

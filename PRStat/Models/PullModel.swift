@@ -118,6 +118,7 @@ struct CommentModel: HandyJSON {
 class CommitModel: HandyJSON {
 
     struct Commit: HandyJSON {
+        var message: String!
         var committer: Committer!
     }
 
@@ -135,6 +136,7 @@ class CommitModel: HandyJSON {
     }
 
     var author: UserModel!
+    var sha: String!
     var url: String!
     var commit: Commit!
     var stats: Stats!
