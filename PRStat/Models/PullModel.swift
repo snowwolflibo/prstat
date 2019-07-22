@@ -8,6 +8,11 @@
 
 import HandyJSON
 
+enum Repository: String {
+    case iOS = "tellus-ios"
+    case android = "tellus-android"
+}
+
 enum PullState: String, HandyJSONEnum {
     case open
     case closed
@@ -30,6 +35,18 @@ struct UserModel: HandyJSON {
     var login: String = ""
 }
 
+struct PullSummaryModel: HandyJSON {
+    var number: Int = 0
+    var created_at: String = ""
+    var url: String = ""
+    var commits_url: String = ""
+    var review_comments_url: String = ""
+    var comments_url: String = ""
+    func commentsUrl(type: CommentType) -> String {
+        return type == .comment ? comments_url : review_comments_url
+    }
+}
+
 struct PullModel: HandyJSON {
     var number: Int = 0
     var user: UserModel?
@@ -47,13 +64,6 @@ struct PullModel: HandyJSON {
     var durationString: String {
         return "\(duration) days"
     }
-    var url: String = ""
-    var commits_url: String = ""
-    var review_comments_url: String = ""
-    var comments_url: String = ""
-    func commentsUrl(type: CommentType) -> String {
-        return type == .comment ? comments_url : review_comments_url
-    }
     var merged: Bool = false
     var comments: Int = 0
     var review_comments: Int = 0
@@ -64,20 +74,21 @@ struct PullModel: HandyJSON {
         return additions + deletions
     }
     var changed_files: Int = 0
+    var url: String = ""
     var titleOutput: String {
         return "title:\(title)(\(url))\tuser:\(user?.login ?? "")"
     }
     var detailOutput: String {
         return "state:\(state)\t" +
-        "created_at:\(created_at)\t\t" +
+        "created_at:\(created_at)\t" +
         "merged:\(merged)\t" +
         "duration:\(durationString)\t" +
         "commits:\(commits)\t" +
         "comments:\(comments)\t" +
-        "review_comments:\(review_comments)\t\t" +
-        "additions:\(additions)\t\t\t" +
-        "deletions:\(deletions)\t\t" +
-        "changed_lines:\(changed_lines)\t\t" +
+        "review_comments:\(review_comments)\t" +
+        "additions:\(additions)\t" +
+        "deletions:\(deletions)\t" +
+        "changed_lines:\(changed_lines)\t" +
         "changed_files:\(changed_files)\t"
     }
 
@@ -203,7 +214,7 @@ struct UserPullModel {
     var closed_pulls: Int {
         return pulls.filter { $0.state == .closed }.count
     }
-    var average_reviewers_per_pull: Int = 0
+    var average_reviews_per_pull: Int = 0
     var comments_per_lines: Int {
         return changed_lines == 0 ? 0 : comments * 1000 / changed_lines
     }
@@ -217,20 +228,20 @@ struct UserPullModel {
 
     var output: String {
         return "user:\(user)\r\n" +
-        "created_pulls:\(created_pulls)\t\t" +
+        "created_pulls:\(created_pulls)\t" +
         "open_pulls:\(open_pulls)\t" +
         "closed_pulls:\(closed_pulls)\t" +
         "commits:\(commits)\t" +
         "comments:\(comments)\t" +
         "review_comments:\(review_comments)\t" +
         "average_duration_per_pull:\(average_duration_per_pull_string)\t" +
-        "average_commits_per_pull:\(average_commits_per_pull)\t\t" +
-        "average_comments_per_pull:\(average_comments_per_pull)\t\t" +
-        "average_review_comments_per_pull:\(average_review_comments_per_pull)\t\t" +
-        "changed_lines:\(changed_lines)\t\t" +
-        "comments_per_lines:\(comments_per_lines)/1000 lines\t\t" +
-        "review_comments_per_lines:\(review_comments_per_lines)/1000 lines\t\t" +
-        "average_reviewers_per_pull:\(average_reviewers_per_pull)\t" +
+        "average_commits_per_pull:\(average_commits_per_pull)\t" +
+        "average_comments_per_pull:\(average_comments_per_pull)\t" +
+        "average_review_comments_per_pull:\(average_review_comments_per_pull)\t" +
+        "changed_lines:\(changed_lines)\t" +
+        "comments_per_lines:\(comments_per_lines)/1000 lines\t" +
+        "review_comments_per_lines:\(review_comments_per_lines)/1000 lines\t" +
+        "average_reviews_per_pull:\(average_reviews_per_pull)\t" +
         "comments_to_others:\(comments_to_others[.comment]!)\t" +
         "review_comments_to_others:\(comments_to_others[.reviewComment]!)\t"
     }
