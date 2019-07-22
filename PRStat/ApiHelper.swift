@@ -30,9 +30,9 @@ class ApiRequest<ModelType> {
         })
     }
 
-    public static func getResponsePromise(url: String, method: HTTPMethod = .get, body: Parameters? = nil, querys: Parameters? = nil) -> Promise<ModelType> {
+    public static func getResponsePromise(forceFetchFromServer: Bool = false, url: String, method: HTTPMethod = .get, body: Parameters? = nil, querys: Parameters? = nil) -> Promise<ModelType> {
 
-        if let data = CacheUtility.getData(url: url) {
+        if !forceFetchFromServer, let data = CacheUtility.getData(url: url) {
             return Promise<ModelType> { seal in
                 seal.fulfill(data as! ModelType)
             }

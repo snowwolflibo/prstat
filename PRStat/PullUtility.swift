@@ -92,7 +92,7 @@ class PullUtility {
                 var fetchMultiplePromise: [Promise<[String:Any]>] = []
                 modelsInThisDateRange.forEach({ model in
                     print("fetch \(model.url)")
-                    let promise = ApiRequest<[String:Any]>.getResponsePromise(url: model.url)
+                    let promise = ApiRequest<[String:Any]>.getResponsePromise(forceFetchFromServer: true, url: model.url)
                     fetchMultiplePromise.append(promise)
                 })
                 print("fetch all pulls in \(dateRange.displayText) (\(fetchMultiplePromise.count))")
@@ -140,7 +140,7 @@ class PullUtility {
 
     private static func fetchAllPagedPulls(repository: Repository, firstPage: Int = 1, allPagedPullSummaries: AllPagedPullSummarysModel, completionHandler: @escaping PullSummariesAction) {
         let url = "https://api.github.com/repos/zillyinc/\(repository.rawValue)/pulls?state=all&sort=created&direction=desc&page=\(firstPage)"
-        _ = ApiRequest<[Any]>.getResponsePromise(url: url).done { array in
+        _ = ApiRequest<[Any]>.getResponsePromise(forceFetchFromServer: true, url: url).done { array in
             autoreleasepool {
                 let models = [PullSummaryModel].deserialize(from: array)!.compactMap { $0 }
                 allPagedPullSummaries.pulls += models
@@ -316,7 +316,7 @@ class PullUtility {
     private static func fetchCommitsOfOnePull(firstPage: Int = 1, url: String, allPagedCommits: AllPagedCommitsModel) -> Promise<[CommitModel]>  {
         return Promise<[CommitModel]> { seal in
             let urlWithPage = url + "?page=\(firstPage)"
-            ApiRequest<[Any]>.getResponsePromise(url: urlWithPage).done { array in
+            ApiRequest<[Any]>.getResponsePromise(forceFetchFromServer: true, url: urlWithPage).done { array in
                 let models = [CommitModel].deserialize(from: array)!.compactMap { $0 }
                 allPagedModelsLock.lock()
                 allPagedCommits.commits += models
