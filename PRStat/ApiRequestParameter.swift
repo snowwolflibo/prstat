@@ -30,8 +30,8 @@ class ApiRequestParameter: NSObject {
         self.querys = querys
 
         self.headers = [
-            "Authorization" : "token f32d0b053d4ad0bb792e42159e573aa513b28a3e",
-            "Accept" : "application/vnd.github.shadow-cat-preview+json,application/vnd.github.sailor-v-preview+json"
+            "Authorization" : "token 9d3fd25027a72e29d2d559b4ad72c890078610a5",
+            "Accept" : "application/vnd.github.shadow-cat-preview+json,application/vnd.github.sailor-v-preview+json,application/vnd.github.squirrel-girl-preview"
         ]
     }
 

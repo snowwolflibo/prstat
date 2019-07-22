@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		A489AE2D1920AD68E01B9916 /* libPods-PRStat.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0DD7ACFFCFB0AC37CB553934 /* libPods-PRStat.a */; };
+		E805482D22E5AF7B008E7E4B /* CacheUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = E805482C22E5AF7B008E7E4B /* CacheUtility.swift */; };
 		E86F8C7C22E3100B00F29B6D /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E86F8C7B22E3100B00F29B6D /* AppDelegate.swift */; };
 		E86F8C7E22E3100B00F29B6D /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E86F8C7D22E3100B00F29B6D /* ViewController.swift */; };
 		E86F8C8122E3100B00F29B6D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E86F8C7F22E3100B00F29B6D /* Main.storyboard */; };
@@ -25,6 +26,7 @@
 /* Begin PBXFileReference section */
 		0DD7ACFFCFB0AC37CB553934 /* libPods-PRStat.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-PRStat.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		9A99F267488B63F9F1C62348 /* Pods-PRStat.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PRStat.debug.xcconfig"; path = "Target Support Files/Pods-PRStat/Pods-PRStat.debug.xcconfig"; sourceTree = "<group>"; };
+		E805482C22E5AF7B008E7E4B /* CacheUtility.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CacheUtility.swift; sourceTree = "<group>"; };
 		E86F8C7822E3100B00F29B6D /* PRStat.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PRStat.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E86F8C7B22E3100B00F29B6D /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		E86F8C7D22E3100B00F29B6D /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -96,6 +98,7 @@
 				E86F8C9522E3176700F29B6D /* PullUtility.swift */,
 				E86F8C9A22E4403300F29B6D /* FileUtility.swift */,
 				E86F8C9C22E44C3000F29B6D /* LogUtility.swift */,
+				E805482C22E5AF7B008E7E4B /* CacheUtility.swift */,
 			);
 			path = PRStat;
 			sourceTree = "<group>";
@@ -217,6 +220,7 @@
 				E86F8C9B22E4403300F29B6D /* FileUtility.swift in Sources */,
 				E86F8C9622E3176700F29B6D /* PullUtility.swift in Sources */,
 				E86F8C9422E3140000F29B6D /* ApiRequestParameter.swift in Sources */,
+				E805482D22E5AF7B008E7E4B /* CacheUtility.swift in Sources */,
 				E86F8C9222E3124700F29B6D /* WSResponse.swift in Sources */,
 				E86F8C9022E311AA00F29B6D /* ApiHelper.swift in Sources */,
 				E86F8C9D22E44C3000F29B6D /* LogUtility.swift in Sources */,

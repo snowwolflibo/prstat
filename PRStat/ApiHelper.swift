@@ -31,9 +31,16 @@ class ApiRequest<ModelType> {
     }
 
     public static func getResponsePromise(url: String, method: HTTPMethod = .get, body: Parameters? = nil, querys: Parameters? = nil) -> Promise<ModelType> {
-        return getResponsePromiseBase(url: url, method: method, body: body, querys: querys, requestAlamofireAction: { (requestParameter) -> DataRequest in
-            return Alamofire.request(requestParameter.getURL(), method: method, parameters: requestParameter.body, encoding: URLEncoding.default, headers: requestParameter.headers)
-        })
+
+        if let data = CacheUtility.getData(url: url) {
+            return Promise<ModelType> { seal in
+                seal.fulfill(data as! ModelType)
+            }
+        } else {
+            return getResponsePromiseBase(url: url, method: method, body: body, querys: querys, requestAlamofireAction: { (requestParameter) -> DataRequest in
+                return Alamofire.request(requestParameter.getURL(), method: method, parameters: requestParameter.body, encoding: URLEncoding.default, headers: requestParameter.headers)
+            })
+        }
     }
 
 
@@ -58,7 +65,7 @@ class ApiRequest<ModelType> {
         let promise = firstly {
             dataRequest.responseJSON()
             }.map(on: nil) { data in
-                return resovleJSONToResponse(json: data.json)
+                return resovleJSONToResponse(url: url, json: data.json)
         }
         dataRequest.responseString().done(on: nil, { data in
             LogUtility.log("【Api数据】responseString:\(data.string)")
@@ -69,9 +76,9 @@ class ApiRequest<ModelType> {
         return promise
     }
 
-    private static func resovleJSONToResponse(json: Any) -> ModelType {
+    private static func resovleJSONToResponse(url: String, json: Any) -> ModelType {
         let array: ModelType = json as! ModelType
-
+        CacheUtility.writeData(url: url, object: json)
         LogUtility.log("从服务端返回的数据:\n\(String(describing: array))")
         return array
     }

@@ -92,23 +92,6 @@ struct PullModel: HandyJSON {
         "changed_files:\(changed_files)\t"
     }
 
-
-//    var titleAndValues: [String:String] {
-//        return [
-//            "state": "\(state)",
-//            "created_at": "\(created_at)",
-//            "merged": "\(merged)",
-//            "duration": "\(durationString)",
-//            "commits": "\(commits)",
-//            "comments": "\(comments)",
-//            "review_comments": "\(review_comments)",
-//            "additions": "\(additions)",
-//            "deletions": "\(deletions)",
-//            "changed_lines": "\(changed_lines)",
-//            "changed_files": "\(changed_lines)",
-//        ]
-//    }
-
     private func date(from string: String) -> Date {
         var dateString = string.replacingOccurrences(of: "T", with: " ")
         dateString = dateString.replacingOccurrences(of: "Z", with: "")
@@ -125,20 +108,53 @@ struct CommentModel: HandyJSON {
     var created_at: String = ""
 }
 
+class CommitModel: HandyJSON {
+
+    struct Commit: HandyJSON {
+        var committer: Committer!
+    }
+
+    struct Committer: HandyJSON {
+        var date: String = ""
+    }
+
+    struct Stats: HandyJSON {
+        var additions: Int = 0
+        var deletions: Int = 0
+
+        var displayText: String {
+            return "additions:\(additions);deletions:\(deletions)"
+        }
+    }
+
+    var author: UserModel!
+    var url: String!
+    var commit: Commit!
+    var stats: Stats!
+
+    required init() {
+    }
+
+}
+
 class PullStat {
     var dateRange: DateRange
     var userPulls: [String:UserPullModel]
+    var userLineAndComments: [String:UserLineAndCommentModel]
     var pulls: [PullModel]
 
-    init(dateRange: DateRange, userPulls: [String:UserPullModel], pulls: [PullModel]) {
+    init(dateRange: DateRange, userPulls: [String:UserPullModel], userLineAndComments: [String:UserLineAndCommentModel], pulls: [PullModel]) {
         self.dateRange = dateRange
         self.userPulls = userPulls
+        self.userLineAndComments = userLineAndComments
         self.pulls = pulls
     }
 
     private var output: String {
         var result = ""
+        // Date
         result = addLine(original: result, newLine: "Stat Month: \(dateRange.displayText)")
+        // User Pulls
         let sortedUserPulls = userPulls.values.sorted { userPull1, userPull2 -> Bool in
             return userPull1.user.compare(userPull2.user) == .orderedAscending
         }
@@ -146,8 +162,17 @@ class PullStat {
         result = addLine(original: result, newLine: UserPullModel.outputTitles)
         sortedUserPulls.forEach {
             result = addLine(original: result, newLine: $0.outputValues)
-            result = addLine(original: result, newLine: "")
         }
+        // User Lines and Comments
+        let sortedUserLinesAndComments = userLineAndComments.values.sorted { model1, model2 -> Bool in
+            return model1.user.compare(model2.user) == .orderedAscending
+        }
+        result = addLine(original: result, newLine: "\r\n=============User Lines and Comments Stat (\(userLineAndComments.count))==============\r\n")
+        result = addLine(original: result, newLine: UserLineAndCommentModel.outputTitles)
+        sortedUserLinesAndComments.forEach {
+            result = addLine(original: result, newLine: $0.outputValues)
+        }
+        // Pulls
         let sortedPulls = pulls.sorted { pull1, pull2 -> Bool in
             let compareResult = pull1.user!.login.compare(pull2.user!.login)
             if compareResult == .orderedSame {
@@ -239,54 +264,103 @@ struct UserPullModel {
     var review_comments_per_lines: Int {
         return changed_lines == 0 ? 0 : review_comments * 1000 / changed_lines
     }
+
+    var outputValues: String {
+        let array = [
+            "\(user)",
+            "\(created_pulls)",
+            "\(open_pulls)",
+            "\(closed_pulls)",
+            "\(commits)",
+            "\(comments)",
+            "\(review_comments)",
+            "\(average_duration_per_pull_string)",
+            "\(average_commits_per_pull)",
+            "\(average_comments_per_pull)",
+            "\(average_review_comments_per_pull)",
+            "\(changed_lines)",
+            "\(additions)",
+            "\(deletions)",
+            "\(comments_per_lines)",
+            "\(review_comments_per_lines)",
+            "\(average_reviews_per_pull)"
+        ]
+        var result = ""
+        array.enumerated().forEach { (index, text) in
+            result += textWithTab(text: text, length: UserPullModel.titleAndLengths[index].1)
+        }
+        return result
+    }
+
+    static var titleAndLengths = [
+        ("dev",25),
+        ("prs",10),
+        ("prs_open",10),
+        ("prs_closed",15),
+        ("commits",10),
+        ("pr_comments",15),
+        ("pr_rev_comments",20),
+        ("avg_pr_duration",20),
+        ("avg_pr_commits",20),
+        ("avg_pr_comments",20),
+        ("avg_pr_rev_comments",25),
+        ("lines",10),
+        ("lines_add",10),
+        ("lines_del",10),
+        ("comments/1000 lines",25),
+        ("rev_comments/1000 lines",25),
+        ("avg_pr_reviews",20)
+    ]
+
+    static var outputTitles: String {
+        let array = titleAndLengths
+        return array.reduce("") { $0 + textWithTab(text: $1.0, length: $1.1) }
+    }
+
+}
+
+struct UserLineAndCommentModel {
+    var user: String = ""
+    var additions: Int = 0
+    var deletions: Int = 0
+    var lines: Int {
+        return additions + deletions
+    }
+    var review_commentds: Int = 0
     var comments_to_others: [CommentType:Int] = [
         .comment: 0,
         .reviewComment: 0
     ]
 
+
     var outputValues: String {
-        return
-            "\(user)\t|\t" +
-                "\(created_pulls)\t|\t" +
-                "\(open_pulls)\t|\t" +
-                "\(closed_pulls)\t|\t" +
-                "\(commits)\t|\t" +
-                "\(comments)\t|\t" +
-                "\(review_comments)\t|\t" +
-                "\(average_duration_per_pull_string)\t|\t" +
-                "\(average_commits_per_pull)\t|\t" +
-                "\(average_comments_per_pull)\t|\t" +
-                "\(average_review_comments_per_pull)\t|\t" +
-                "\(changed_lines)\t|\t" +
-                "\(additions)\t|\t" +
-                "\(deletions)\t|\t" +
-                "\(comments_per_lines)\t|\t" +
-                "\(review_comments_per_lines)\t|\t" +
-                "\(average_reviews_per_pull)\t|\t" +
-                "\(comments_to_others[.comment]!)\t|\t" +
-        "\(comments_to_others[.reviewComment]!)";
+        let array = [
+            "\(user)",
+            "\(comments_to_others[.comment]!)",
+            "\(comments_to_others[.reviewComment]!)",
+            "\(lines)"
+        ]
+        var result = ""
+        array.enumerated().forEach { (index, text) in
+            result += textWithTab(text: text, length: UserPullModel.titleAndLengths[index].1)
+        }
+        return result
     }
 
+    static var titleAndLengths = [
+        ("dev",25),
+        ("comments_given",30),
+        ("rev_comments_given",30),
+        ("lines",10)
+    ]
+
     static var outputTitles: String {
-        return "dev\t|\t" +
-            "prs\t|\t" +
-            "prs_open\t|\t" +
-            "prs_closed\t|\t" +
-            "commits\t|\t" +
-            "pr_comments\t|\t" +
-            "pr_rev_comments\t|\t" +
-            "avg_pr_duration\t|\t" +
-            "avg_pr_commits\t|\t" +
-            "avg_pr_comments\t|\t" +
-            "avg_pr_rev_comments\t|\t" +
-            "lines\t|\t" +
-            "lines_add\t|\t" +
-            "lines_del\t|\t" +
-            "comments/1000 lines\t|\t" +
-            "rev_comments/1000 lines\t|\t" +
-            "avg_pr_reviews\t|\t" +
-            "comments_given\t|\t" +
-        "rev_comments_given\t|\t";
+        let array = titleAndLengths
+        return array.reduce("") { $0 + textWithTab(text: $1.0, length: $1.1) }
     }
 }
 
+func textWithTab(text: String, length: Int) -> String {
+    let spaceNumber = max(0, length - 1 - text.count)
+    return " " + text + String(repeating: " ", count: spaceNumber) + "|"
+}

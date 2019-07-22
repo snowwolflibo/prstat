@@ -34,4 +34,8 @@ class FileUtility {
     static func readText(fromResource name: String) -> String? {
         return try? String(contentsOf: URL(fileURLWithPath: filePath(forResource: name)), encoding: .utf8)
     }
+
+    static func readText(filePath: String) -> String? {
+        return try? String(contentsOf: URL(fileURLWithPath: filePath), encoding: .utf8)
+    }
 }
