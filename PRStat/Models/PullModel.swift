@@ -353,6 +353,8 @@ struct UserLineAndCommentModel {
             "\(user)",
             "\(comments_to_others[.comment]!)",
             "\(comments_to_others[.reviewComment]!)",
+            "\(additions)",
+            "\(deletions)",
             "\(lines)"
         ]
         var result = ""
@@ -364,9 +366,11 @@ struct UserLineAndCommentModel {
 
     static var titleAndLengths = [
         ("dev",25),
-        ("comments_given",30),
-        ("rev_comments_given",30),
-        ("lines",10)
+        ("comments_given",20),
+        ("rev_comments_given",20),
+        ("lines_add",15),
+        ("lines_del",15),
+        ("lines",15)
     ]
 
     static var outputTitles: String {

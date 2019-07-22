@@ -123,16 +123,16 @@ class PullUtility {
                 fetchAllPullDetails(pullStatType: .merged, allPullStats: allPullStats, dateRanges: dateRanges, allPulls: allPulls).done({ pullStats in
                     fetchCommentsToOthers(pullStats: pullStats, allPulls: allPulls, type: .comment).done { _ in
                         fetchCommentsToOthers(pullStats: pullStats, allPulls: allPulls, type: .reviewComment).done({ _ in
-                            //                        fetchCommits(pullStats: pullStats, allPulls: allPulls).done({ _ in
-                            //                            pullStats.forEach({ pullStat in
-                            //                                pullStat.writeToFile()
-                            //                            })
-                            //                        }).catch({ error in
-                            //                            print(error)
-                            //                        })
-                            pullStats.forEach({ pullStat in
-                                pullStat.writeToFile()
+                            fetchCommits(pullStats: pullStats, allPulls: allPulls).done({ _ in
+                                pullStats.forEach({ pullStat in
+                                    pullStat.writeToFile()
+                                })
+                            }).catch({ error in
+                                print(error)
                             })
+//                            pullStats.forEach({ pullStat in
+//                                pullStat.writeToFile()
+//                            })
                         })
                     }
                 })
