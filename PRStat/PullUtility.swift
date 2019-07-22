@@ -62,9 +62,9 @@ class PullUtility {
         print("generate pull stat (\(pullStat.dateRange.displayText)) completed. users: \(pullStat.userPulls.count); pulls: \(pullStat.pulls.count)")
 //        pullStat.writeToFile()
         fetchCommentsToOthers(pullStat: pullStat, allPulls: allPulls, type: .comment).done { _ in
-//            fetchCommentsToOthers(pullStat: pullStat, allPulls: allPulls, type: .reviewComment).done({ _ in
+            fetchCommentsToOthers(pullStat: pullStat, allPulls: allPulls, type: .reviewComment).done({ _ in
                 pullStat.writeToFile()
-//            })
+            })
         }
     }
 
@@ -129,7 +129,7 @@ class PullUtility {
         let start = pageSize * page
         let end = min(array.count, pageSize * (page + 1))
         var result: [PullModel] = []
-        print("pick pull from \(start) to \(end - 1)")
+        print("pick pull from \(start) to \(end - 1), total: \(array.count)")
         for i in start..<end {
             result.append(array[i])
         }
@@ -139,8 +139,8 @@ class PullUtility {
     private static func fetchCommentsToOthers(pullStat: PullStat, allPulls: [PullModel], type: CommentType) -> Promise<Bool> {
         return Promise<Bool> { seal in
             print("fetch comments to others - \(type.rawValue) (\(allPulls.count))")
-            fetchCommentsToOthersWithBatch(pullStat: pullStat, type: type, allPulls: allPulls, page: 0).done({ _ in
-                seal.fulfill(true)
+            fetchCommentsToOthersWithBatch(pullStat: pullStat, type: type, allPulls: allPulls, page: 0).done({ result in
+                seal.fulfill(result)
             })
         }
     }
@@ -149,10 +149,11 @@ class PullUtility {
     private static let commentsAddedLock = NSLock()
     private static func fetchCommentsToOthersWithBatch(pullStat: PullStat, type: CommentType, allPulls: [PullModel], page: Int) -> Promise<Bool> {
         return Promise<Bool> { seal in
-            let pageSize = 1
+            let pageSize = 20
             let pageCount = (allPulls.count - 1) / pageSize + 1
             if page >= pageCount {
                 seal.fulfill(true)
+                return
             }
             let pickedPulls = pick(from: allPulls, page: page, pageSize: pageSize)
             var fetchMultiplePromise: [Promise<[CommentModel]>] = []
@@ -164,19 +165,20 @@ class PullUtility {
             when(fulfilled: fetchMultiplePromise).done({ array in
                 let allComments = array.flatMap { $0 }
                 print("fetch comments to others - \(type.rawValue) completed. allComments: (\(allComments.count))")
-                var userPulls = pullStat.userPulls
                 allComments.forEach({ comment in
                     let user = comment.user.login
                     commentsAddedLock.lock()
-                    if userPulls[user] == nil {
+                    if pullStat.userPulls[user] == nil {
                         var userPull = UserPullModel()
                         userPull.user = user
-                        userPulls[user] = userPull
+                        pullStat.userPulls[user] = userPull
                     }
-                    userPulls[user]!.comments_to_others[type]! += 1
+                    pullStat.userPulls[user]!.comments_to_others[type]! += 1
                     commentsAddedLock.unlock()
                 })
-                fetchCommentsToOthersWithBatch(pullStat: pullStat, type: type, allPulls: allPulls, page: page + 1)
+                fetchCommentsToOthersWithBatch(pullStat: pullStat, type: type, allPulls: allPulls, page: page + 1).done({ result in
+                    seal.fulfill(result)
+                })
             }).catch({ error in
                 print(error)
                 seal.reject(error)
@@ -200,7 +202,9 @@ class PullUtility {
                     seal.fulfill(allPagedComments.comments)
                 } else {
                     block("next page")
-                    fetchCommentsToOthersOfOnePull(firstPage: firstPage + 1, url: url, allPagedComments: allPagedComments)
+                    fetchCommentsToOthersOfOnePull(firstPage: firstPage + 1, url: url, allPagedComments: allPagedComments).done({ models in
+                        seal.fulfill(models)
+                    })
                 }
             }
         }

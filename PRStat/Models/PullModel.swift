@@ -97,10 +97,16 @@ struct CommentModel: HandyJSON {
     var created_at: String = ""
 }
 
-struct PullStat {
+class PullStat {
     var dateRange: DateRange
     var userPulls: [String:UserPullModel]
     var pulls: [PullModel]
+
+    init(dateRange: DateRange, userPulls: [String:UserPullModel], pulls: [PullModel]) {
+        self.dateRange = dateRange
+        self.userPulls = userPulls
+        self.pulls = pulls
+    }
 
     private var output: String {
         var result = ""
