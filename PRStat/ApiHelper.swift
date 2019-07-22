@@ -8,8 +8,6 @@
 
 import UIKit
 import PromiseKit
-import HandyJSON
-
 
 class FileData {
     var data: Data!
@@ -21,9 +19,6 @@ class FileData {
 class ApiRequest<ModelType> {
 
     // MARK: - -Promise
-
-
-
     public static func post(url: String, body: Parameters? = nil) -> Promise<ModelType>  {
         return getResponsePromiseBase(url: url, method: .post, body: body, querys: nil, requestAlamofireAction: { (requestParameter) -> DataRequest in
             return Alamofire.request(requestParameter.getURL(), method: .post, parameters: body, encoding: JSONEncoding.default, headers: requestParameter.headers)
@@ -31,8 +26,7 @@ class ApiRequest<ModelType> {
     }
 
     public static func getResponsePromise(forceFetchFromServer: Bool = false, url: String, method: HTTPMethod = .get, body: Parameters? = nil, querys: Parameters? = nil) -> Promise<ModelType> {
-
-        if !forceFetchFromServer, let data = CacheUtility.getData(url: url) {
+        if let data = CacheUtility.getData(url: url) {
             return Promise<ModelType> { seal in
                 seal.fulfill(data as! ModelType)
             }
@@ -43,18 +37,14 @@ class ApiRequest<ModelType> {
         }
     }
 
-
     static func getRequestParameter(url: String, body: Parameters? = nil, querys: Parameters? = nil) -> ApiRequestParameter {
-
         let requestParameter = ApiRequestParameter(url: url, body: body, querys: querys)
-
         let url2 = requestParameter.getURL()
         let body2 = String(describing: requestParameter.body)
         let headers2 = String(describing: requestParameter.headers)
         LogUtility.log("【Api数据】url=" + url2)
         LogUtility.log("【Api数据】body=\(body2))")
         LogUtility.log("【Api数据】headers=\(headers2)")
-
         return requestParameter
     }
 
@@ -67,7 +57,7 @@ class ApiRequest<ModelType> {
             }.map(on: nil) { data in
                 return resovleJSONToResponse(url: url, json: data.json)
         }
-        dataRequest.responseString().done(on: nil, { data in
+        _  = dataRequest.responseString().done(on: nil, { data in
             LogUtility.log("【Api数据】responseString:\(data.string)")
         })
         promise.catch { (error) in
@@ -83,22 +73,9 @@ class ApiRequest<ModelType> {
         return array
     }
 
-//    private static func getErrorWSResponse(error: Error?) -> ResponseType {
-//        var strError = ""
-//        if let _error = error {
-//            strError = "; \(_error)"
-//            print("调用接口失败\(_error)")
-//        }
-//        let res = ResponseType()
-//        res.code = -1
-//        res.message = "deserialize error" + strError
-//        return res
-//    }
-
     private static func printError(error: Error?, dataRequest: DataRequest?) {
         if let _error = error {
             LogUtility.log("promise.catch:\(_error)")
         }
     }
-
 }

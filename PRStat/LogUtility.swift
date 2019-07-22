@@ -6,8 +6,6 @@
 //  Copyright © 2019 zilly. All rights reserved.
 //
 
-import UIKit
-
 class LogUtility {
 
     static func log(_ text: String) {

@@ -15,12 +15,12 @@
 		E86F8C8322E3100F00F29B6D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E86F8C8222E3100F00F29B6D /* Assets.xcassets */; };
 		E86F8C8622E3100F00F29B6D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E86F8C8422E3100F00F29B6D /* LaunchScreen.storyboard */; };
 		E86F8C9022E311AA00F29B6D /* ApiHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = E86F8C8F22E311AA00F29B6D /* ApiHelper.swift */; };
-		E86F8C9222E3124700F29B6D /* WSResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = E86F8C9122E3124700F29B6D /* WSResponse.swift */; };
 		E86F8C9422E3140000F29B6D /* ApiRequestParameter.swift in Sources */ = {isa = PBXBuildFile; fileRef = E86F8C9322E3140000F29B6D /* ApiRequestParameter.swift */; };
 		E86F8C9622E3176700F29B6D /* PullUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = E86F8C9522E3176700F29B6D /* PullUtility.swift */; };
 		E86F8C9922E4054100F29B6D /* PullModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E86F8C9822E4054100F29B6D /* PullModel.swift */; };
 		E86F8C9B22E4403300F29B6D /* FileUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = E86F8C9A22E4403300F29B6D /* FileUtility.swift */; };
 		E86F8C9D22E44C3000F29B6D /* LogUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = E86F8C9C22E44C3000F29B6D /* LogUtility.swift */; };
+		E8DA9B0D22E612C20040EA3A /* CommonModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8DA9B0C22E612C20040EA3A /* CommonModel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -35,12 +35,12 @@
 		E86F8C8522E3100F00F29B6D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		E86F8C8722E3100F00F29B6D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		E86F8C8F22E311AA00F29B6D /* ApiHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApiHelper.swift; sourceTree = "<group>"; };
-		E86F8C9122E3124700F29B6D /* WSResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WSResponse.swift; sourceTree = "<group>"; };
 		E86F8C9322E3140000F29B6D /* ApiRequestParameter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApiRequestParameter.swift; sourceTree = "<group>"; };
 		E86F8C9522E3176700F29B6D /* PullUtility.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PullUtility.swift; sourceTree = "<group>"; };
 		E86F8C9822E4054100F29B6D /* PullModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PullModel.swift; sourceTree = "<group>"; };
 		E86F8C9A22E4403300F29B6D /* FileUtility.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileUtility.swift; sourceTree = "<group>"; };
 		E86F8C9C22E44C3000F29B6D /* LogUtility.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogUtility.swift; sourceTree = "<group>"; };
+		E8DA9B0C22E612C20040EA3A /* CommonModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommonModel.swift; sourceTree = "<group>"; };
 		FA432B7867FDB97C993784BE /* Pods-PRStat.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PRStat.release.xcconfig"; path = "Target Support Files/Pods-PRStat/Pods-PRStat.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -93,7 +93,6 @@
 				E86F8C8422E3100F00F29B6D /* LaunchScreen.storyboard */,
 				E86F8C8722E3100F00F29B6D /* Info.plist */,
 				E86F8C8F22E311AA00F29B6D /* ApiHelper.swift */,
-				E86F8C9122E3124700F29B6D /* WSResponse.swift */,
 				E86F8C9322E3140000F29B6D /* ApiRequestParameter.swift */,
 				E86F8C9522E3176700F29B6D /* PullUtility.swift */,
 				E86F8C9A22E4403300F29B6D /* FileUtility.swift */,
@@ -107,6 +106,7 @@
 			isa = PBXGroup;
 			children = (
 				E86F8C9822E4054100F29B6D /* PullModel.swift */,
+				E8DA9B0C22E612C20040EA3A /* CommonModel.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -221,10 +221,10 @@
 				E86F8C9622E3176700F29B6D /* PullUtility.swift in Sources */,
 				E86F8C9422E3140000F29B6D /* ApiRequestParameter.swift in Sources */,
 				E805482D22E5AF7B008E7E4B /* CacheUtility.swift in Sources */,
-				E86F8C9222E3124700F29B6D /* WSResponse.swift in Sources */,
 				E86F8C9022E311AA00F29B6D /* ApiHelper.swift in Sources */,
 				E86F8C9D22E44C3000F29B6D /* LogUtility.swift in Sources */,
 				E86F8C7E22E3100B00F29B6D /* ViewController.swift in Sources */,
+				E8DA9B0D22E612C20040EA3A /* CommonModel.swift in Sources */,
 				E86F8C9922E4054100F29B6D /* PullModel.swift in Sources */,
 				E86F8C7C22E3100B00F29B6D /* AppDelegate.swift in Sources */,
 			);

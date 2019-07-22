@@ -8,7 +8,6 @@
 
 import UIKit
 import CommonCrypto
-import HandyJSON
 
 class CacheUtility: NSObject  {
 
@@ -26,7 +25,7 @@ class CacheUtility: NSObject  {
     static func writeData(url: String, object: Any) {
         let path = filePath(url: url)
         FileUtility.createDirectoryIfNeed(path: path)
-        let data = try? JSONSerialization.data(withJSONObject: object, options: []) as? NSData
+        let data = try? JSONSerialization.data(withJSONObject: object, options: []) as NSData
         data?.write(toFile: path, atomically: true)
     }
 

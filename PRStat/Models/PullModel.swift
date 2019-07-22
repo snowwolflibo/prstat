@@ -8,38 +8,6 @@
 
 import HandyJSON
 
-enum Repository: String {
-    case iOS = "tellus-ios"
-    case android = "tellus-android"
-}
-
-enum PullState: String, HandyJSONEnum {
-    case open
-    case closed
-}
-
-enum PullStatType: String {
-    case created
-    case merged
-}
-
-enum CommentType: String {
-    case comment, reviewComment
-}
-
-struct DateRange {
-    var year: Int = 1970
-    var month: Int = 1
-    var displayText: String {
-        let monthWithPaddingZero = month < 10 ? "0\(month)" : "\(month)"
-        return "\(year)-\(monthWithPaddingZero)"
-    }
-}
-
-struct UserModel: HandyJSON {
-    var login: String = ""
-}
-
 struct PullSummaryModel: HandyJSON {
     var number: Int = 0
     var created_at: String = ""
@@ -68,23 +36,18 @@ struct PullModel: HandyJSON {
         let days = mergedDate.timeIntervalSince(createdDate) / (3600 * 24)
         return Int(days)
     }
-    var durationString: String {
-        return "\(duration) days"
-    }
+    var durationString: String { return "\(duration) days" }
     var merged: Bool = false
     var comments: Int = 0
     var review_comments: Int = 0
     var commits: Int = 0
     var additions: Int = 0
     var deletions: Int = 0
-    var changed_lines: Int {
-        return additions + deletions
-    }
+    var changed_lines: Int { return additions + deletions }
     var changed_files: Int = 0
     var url: String = ""
-    var titleOutput: String {
-        return "title:\(title)(\(url))\tuser:\(user?.login ?? "")"
-    }
+    var titleOutput: String { return "title:\(title)(\(url))\tuser:\(user?.login ?? "")" }
+
     var detailOutput: String {
         return "state:\(state)\t" +
         "created_at:\(created_at)\t" +
@@ -116,7 +79,6 @@ struct CommentModel: HandyJSON {
 }
 
 class CommitModel: HandyJSON {
-
     struct Commit: HandyJSON {
         var message: String!
         var comment_count: Int = 0
@@ -130,10 +92,7 @@ class CommitModel: HandyJSON {
     struct Stats: HandyJSON {
         var additions: Int = 0
         var deletions: Int = 0
-
-        var displayText: String {
-            return "additions:\(additions);deletions:\(deletions)"
-        }
+        var displayText: String { return "additions:\(additions);deletions:\(deletions)" }
     }
 
     var author: UserModel!
@@ -142,15 +101,10 @@ class CommitModel: HandyJSON {
     var comments_url: String!
     var commit: Commit!
     var stats: Stats!
-//    var review_comments: Int = 0
-
-    required init() {
-    }
-
+    required init() { }
 }
 
 class PullStat {
-
     var dateRange: DateRange
     var userPulls: [PullStatType:[String:UserPullModel]] = [
         .created: [:],
@@ -231,59 +185,24 @@ class PullStat {
 struct UserPullModel {
     var user: String = ""
     var pulls: [PullModel] = []
-
-    var created_pulls: Int {
-        return pulls.count
-    }
-    var commits: Int {
-        return pulls.reduce(0) { $0 + $1.commits }
-    }
-    var comments: Int {
-        return pulls.reduce(0) { $0 + $1.comments }
-    }
-    var review_comments: Int {
-        return pulls.reduce(0) { $0 + $1.review_comments }
-    }
-    var average_duration_per_pull: Int {
-        return created_pulls == 0 ? 0 : pulls.reduce(0) { $0 + $1.duration } / created_pulls
-    }
-    var average_duration_per_pull_string: String {
-        return "\(average_duration_per_pull) days"
-    }
-    var average_commits_per_pull: Int {
-        return created_pulls == 0 ? 0 : commits / created_pulls
-    }
-    var average_comments_per_pull: Int {
-        return created_pulls == 0 ? 0 : comments / created_pulls
-    }
-    var average_review_comments_per_pull: Int {
-        return created_pulls == 0 ? 0 : review_comments / created_pulls
-    }
-    var additions: Int {
-        return pulls.reduce(0) { $0 + $1.additions }
-    }
-    var deletions: Int {
-        return pulls.reduce(0) { $0 + $1.deletions }
-    }
-    var changed_lines: Int {
-        return additions + deletions
-    }
-    var average_lines_per_pull: Int {
-        return created_pulls == 0 ? 0 : changed_lines / created_pulls
-    }
-    var open_pulls: Int {
-        return pulls.filter { $0.state == .open }.count
-    }
-    var closed_pulls: Int {
-        return pulls.filter { $0.state == .closed }.count
-    }
+    var created_pulls: Int { return pulls.count }
+    var commits: Int { return pulls.reduce(0) { $0 + $1.commits } }
+    var comments: Int { return pulls.reduce(0) { $0 + $1.comments } }
+    var review_comments: Int { return pulls.reduce(0) { $0 + $1.review_comments } }
+    var average_duration_per_pull: Int { return created_pulls == 0 ? 0 : pulls.reduce(0) { $0 + $1.duration } / created_pulls }
+    var average_duration_per_pull_string: String { return "\(average_duration_per_pull) days" }
+    var average_commits_per_pull: Int { return created_pulls == 0 ? 0 : commits / created_pulls }
+    var average_comments_per_pull: Int { return created_pulls == 0 ? 0 : comments / created_pulls }
+    var average_review_comments_per_pull: Int { return created_pulls == 0 ? 0 : review_comments / created_pulls }
+    var additions: Int { return pulls.reduce(0) { $0 + $1.additions } }
+    var deletions: Int { return pulls.reduce(0) { $0 + $1.deletions } }
+    var changed_lines: Int { return additions + deletions }
+    var average_lines_per_pull: Int { return created_pulls == 0 ? 0 : changed_lines / created_pulls }
+    var open_pulls: Int { return pulls.filter { $0.state == .open }.count }
+    var closed_pulls: Int { return pulls.filter { $0.state == .closed }.count }
     var average_reviews_per_pull: Int = 0
-    var comments_per_lines: Int {
-        return changed_lines == 0 ? 0 : comments * 1000 / changed_lines
-    }
-    var review_comments_per_lines: Int {
-        return changed_lines == 0 ? 0 : review_comments * 1000 / changed_lines
-    }
+    var comments_per_lines: Int { return changed_lines == 0 ? 0 : comments * 1000 / changed_lines }
+    var review_comments_per_lines: Int { return changed_lines == 0 ? 0 : review_comments * 1000 / changed_lines }
 
     var outputValues: String {
         let array = [
@@ -306,9 +225,7 @@ struct UserPullModel {
             "\(average_reviews_per_pull)"
         ]
         var result = ""
-        array.enumerated().forEach { (index, text) in
-            result += textWithTab(text: text, length: UserPullModel.titleAndLengths[index].1)
-        }
+        array.enumerated().forEach { (index, text) in result += textWithTab(text: text, length: UserPullModel.titleAndLengths[index].1) }
         return result
     }
 
@@ -336,25 +253,19 @@ struct UserPullModel {
         let array = titleAndLengths
         return array.reduce("") { $0 + textWithTab(text: $1.0, length: $1.1) }
     }
-
 }
 
 struct UserLineAndCommentModel {
     var user: String = ""
     var additions: Int = 0
     var deletions: Int = 0
-    var lines: Int {
-        return additions + deletions
-    }
+    var lines: Int { return additions + deletions }
     var comment_count: Int = 0
-    var review_comments_per_lines: Int {
-        return lines == 0 ? 0 : comment_count * 1000 / lines
-    }
+    var review_comments_per_lines: Int { return lines == 0 ? 0 : comment_count * 1000 / lines }
     var comments_to_others: [CommentType:Int] = [
         .comment: 0,
         .reviewComment: 0
     ]
-
 
     var outputValues: String {
         let array = [
@@ -368,9 +279,7 @@ struct UserLineAndCommentModel {
             "\(review_comments_per_lines)"
         ]
         var result = ""
-        array.enumerated().forEach { (index, text) in
-            result += textWithTab(text: text, length: UserLineAndCommentModel.titleAndLengths[index].1)
-        }
+        array.enumerated().forEach { (index, text) in result += textWithTab(text: text, length: UserLineAndCommentModel.titleAndLengths[index].1) }
         return result
     }
 

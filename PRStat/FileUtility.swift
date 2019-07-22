@@ -8,29 +8,16 @@
 
 import UIKit
 
-/// 文件工具类
 class FileUtility {
 
-    /// 获取资源文件的完整路径
-    ///
-    /// - Parameter name: 文件名
-    /// - Returns: 完整路径
     static func filePath(forResource name: String) -> String {
         return Bundle.main.path(forResource: name, ofType: nil)!
     }
 
-    /// 获取Document文件的完整路径
-    ///
-    /// - Parameter name: 文件名
-    /// - Returns: 完整路径
     static func documentFilePath(for name: String) -> String {
         return NSHomeDirectory() + "/Documents/" + name
     }
 
-    /// 读取文本文本内容
-    ///
-    /// - Parameter name: 资源文件名
-    /// - Returns: 文本内容
     static func readText(fromResource name: String) -> String? {
         return try? String(contentsOf: URL(fileURLWithPath: filePath(forResource: name)), encoding: .utf8)
     }
@@ -49,8 +36,6 @@ class FileUtility {
 }
 
 extension String {
-    //返回第一次出现的指定子字符串在此字符串中的索引
-    //（如果backwards参数设置为true，则返回最后出现的位置）
     func positionOf(sub:String, backwards:Bool = false)->Int {
         var pos = -1
         if let range = range(of:sub, options: backwards ? .backwards : .literal ) {
@@ -61,7 +46,6 @@ extension String {
         return pos
     }
 
-    //根据开始位置和长度截取字符串
     func subString(start:Int, length:Int = -1) -> String {
         let str = self as NSString
         if str.length > 0 {
