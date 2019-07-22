@@ -327,9 +327,10 @@ class PullUtility {
                 if models.count < pageSize {
                     block("completed")
                     fetchCommitsBySHA(commits: allPagedCommits.commits).done({ _ in
-                        fetchCommitReviewComments(commits: allPagedCommits.commits).done({ _ in
-                            seal.fulfill(allPagedCommits.commits)
-                        })
+//                        fetchCommitReviewComments(commits: allPagedCommits.commits).done({ _ in
+//                            seal.fulfill(allPagedCommits.commits)
+//                        })
+                        seal.fulfill(allPagedCommits.commits)
                     }).catch({ error in
                         seal.reject(error)
                     })
@@ -373,6 +374,7 @@ class PullUtility {
                 if let model = CommitModel.deserialize(from: data), let stats = model.stats {
                     allPagedModelsLock.lock()
                     commit.stats = stats
+                    commit.commit = model.commit
                     allPagedModelsLock.unlock()
                     print("Request:\(commit.url!); \(stats.displayText)")
                 } else {
@@ -411,9 +413,9 @@ class PullUtility {
             ApiRequest<[Any]>.getResponsePromise(url: url).done { data in
                 if let models = [CommentModel].deserialize(from: data) {
                     allPagedModelsLock.lock()
-                    commit.review_comments = models.compactMap { $0 }.count
+                    commit.commit.comment_count = models.compactMap { $0 }.count
                     allPagedModelsLock.unlock()
-                    print("Request:\(url); commit.review_comments \(commit.review_comments)")
+                    print("Request:\(url); commit.commit.comment_count \(commit.commit.comment_count)")
                 } else {
                     print("Request:\(url); return nil")
                 }

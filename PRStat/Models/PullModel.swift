@@ -142,7 +142,7 @@ class CommitModel: HandyJSON {
     var comments_url: String!
     var commit: Commit!
     var stats: Stats!
-    var review_comments: Int = 0
+//    var review_comments: Int = 0
 
     required init() {
     }
@@ -175,7 +175,7 @@ class PullStat {
             let sortedUserPulls = userPullsOfThisType.values.sorted { userPull1, userPull2 -> Bool in
                 return userPull1.user.compare(userPull2.user) == .orderedAscending
             }
-            result = self.addLine(original: result, newLine: "\r\n============= user pulls - \(pullStatType.rawValue) ==============\r\n")
+            result = self.addLine(original: result, newLine: "\r\n============= user pulls - \(pullStatType.rawValue) (\(sortedUserPulls.reduce(0) { $0 + $1.pulls.count })) ==============\r\n")
             result = self.addLine(original: result, newLine: UserPullModel.outputTitles)
             sortedUserPulls.forEach {
                 result = self.addLine(original: result, newLine: $0.outputValues)
