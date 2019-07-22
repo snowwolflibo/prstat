@@ -13,7 +13,7 @@ import HandyJSON
 class CacheUtility: NSObject  {
 
     static func filePath(url: String) -> String {
-        return FileUtility.documentFilePath(for: url.md5() + ".txt")
+        return FileUtility.documentFilePath(for: "cache/" + url.md5() + ".txt")
     }
 
     static func getData(url: String) -> Any? {
@@ -24,8 +24,10 @@ class CacheUtility: NSObject  {
     }
 
     static func writeData(url: String, object: Any) {
+        let path = filePath(url: url)
+        FileUtility.createDirectoryIfNeed(path: path)
         let data = try? JSONSerialization.data(withJSONObject: object, options: []) as? NSData
-        data?.write(toFile: filePath(url: url), atomically: true)
+        data?.write(toFile: path, atomically: true)
     }
 
 }

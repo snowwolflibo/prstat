@@ -18,6 +18,11 @@ enum PullState: String, HandyJSONEnum {
     case closed
 }
 
+enum PullStatType: String {
+    case created
+    case merged
+}
+
 enum CommentType: String {
     case comment, reviewComment
 }
@@ -38,6 +43,8 @@ struct UserModel: HandyJSON {
 struct PullSummaryModel: HandyJSON {
     var number: Int = 0
     var created_at: String = ""
+    var merged_at: String?
+    var closed_at: String?
     var url: String = ""
     var commits_url: String = ""
     var review_comments_url: String = ""
@@ -138,16 +145,19 @@ class CommitModel: HandyJSON {
 }
 
 class PullStat {
-    var dateRange: DateRange
-    var userPulls: [String:UserPullModel]
-    var userLineAndComments: [String:UserLineAndCommentModel]
-    var pulls: [PullModel]
 
-    init(dateRange: DateRange, userPulls: [String:UserPullModel], userLineAndComments: [String:UserLineAndCommentModel], pulls: [PullModel]) {
+    var dateRange: DateRange
+    var userPulls: [PullStatType:[String:UserPullModel]] = [
+        .created: [:],
+        .merged: [:]
+    ]
+    var userLineAndComments: [String:UserLineAndCommentModel]
+    var createdPulls: [PullModel]
+
+    init(dateRange: DateRange, userLineAndComments: [String:UserLineAndCommentModel], createdPulls: [PullModel]) {
         self.dateRange = dateRange
-        self.userPulls = userPulls
         self.userLineAndComments = userLineAndComments
-        self.pulls = pulls
+        self.createdPulls = createdPulls
     }
 
     private var output: String {
@@ -155,14 +165,19 @@ class PullStat {
         // Date
         result = addLine(original: result, newLine: "Stat Month: \(dateRange.displayText)")
         // User Pulls
-        let sortedUserPulls = userPulls.values.sorted { userPull1, userPull2 -> Bool in
-            return userPull1.user.compare(userPull2.user) == .orderedAscending
+        let userPullBlock = { (pullStatType: PullStatType) in
+            let userPullsOfThisType = self.userPulls[pullStatType]!
+            let sortedUserPulls = userPullsOfThisType.values.sorted { userPull1, userPull2 -> Bool in
+                return userPull1.user.compare(userPull2.user) == .orderedAscending
+            }
+            result = self.addLine(original: result, newLine: "\r\n=============User Pulls Stat - \(pullStatType.rawValue)==============\r\n")
+            result = self.addLine(original: result, newLine: UserPullModel.outputTitles)
+            sortedUserPulls.forEach {
+                result = self.addLine(original: result, newLine: $0.outputValues)
+            }
         }
-        result = addLine(original: result, newLine: "\r\n=============User Pulls Stat (\(userPulls.count))==============\r\n")
-        result = addLine(original: result, newLine: UserPullModel.outputTitles)
-        sortedUserPulls.forEach {
-            result = addLine(original: result, newLine: $0.outputValues)
-        }
+        userPullBlock(.created)
+        userPullBlock(.merged)
         // User Lines and Comments
         let sortedUserLinesAndComments = userLineAndComments.values.sorted { model1, model2 -> Bool in
             return model1.user.compare(model2.user) == .orderedAscending
@@ -173,7 +188,7 @@ class PullStat {
             result = addLine(original: result, newLine: $0.outputValues)
         }
         // Pulls
-        let sortedPulls = pulls.sorted { pull1, pull2 -> Bool in
+        let sortedPulls = createdPulls.sorted { pull1, pull2 -> Bool in
             let compareResult = pull1.user!.login.compare(pull2.user!.login)
             if compareResult == .orderedSame {
                 return pull1.number > pull2.number
@@ -342,7 +357,7 @@ struct UserLineAndCommentModel {
         ]
         var result = ""
         array.enumerated().forEach { (index, text) in
-            result += textWithTab(text: text, length: UserPullModel.titleAndLengths[index].1)
+            result += textWithTab(text: text, length: UserLineAndCommentModel.titleAndLengths[index].1)
         }
         return result
     }
