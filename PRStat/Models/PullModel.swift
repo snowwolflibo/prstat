@@ -54,7 +54,7 @@ struct PullModel: HandyJSON {
     var changed_files: Int = 0
     var comments: Int = 0
     var review_comments: Int = 0
-    var titleOutput: String { return "title:\(title)(\(url))\tuser:\(user?.login ?? "")" }
+    var titleOutput: String { return "title:\(title)(\(url))\tuser: \(true_user?.login ?? "") \t\t creater: \(user?.login ?? "")" }
 
     var detailOutput: String {
         return "state:\(state)\t" +
