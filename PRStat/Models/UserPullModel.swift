@@ -7,7 +7,7 @@
 //
 
 struct UserPullModel {
-    var user: String = ""
+    let user: String
     var pulls: [PullModel] = []
     var created_pulls: Int { return pulls.count }
     var commits: Int { return pulls.reduce(0) { $0 + $1.commits } }
@@ -27,6 +27,10 @@ struct UserPullModel {
     var average_reviews_per_pull: Int = 0
     var comments_per_lines: Int { return changed_lines == 0 ? 0 : comments * 1000 / changed_lines }
     var review_comments_per_lines: Int { return changed_lines == 0 ? 0 : review_comments * 1000 / changed_lines }
+
+    init(user: String) {
+        self.user = user
+    }
 
     var outputValues: String {
         let array = [

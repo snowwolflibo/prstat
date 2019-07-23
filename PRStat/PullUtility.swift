@@ -13,11 +13,6 @@ class PullUtility {
     private static let modelsAddedLock = NSLock()
 
     // MARK: Relatived struct & typealias
-    struct DateRangeAndPullsModel {
-        var dateRange: DateRange
-        var pulls: [PullModel]
-    }
-
     class AllPagedModels<T> {
         var models: [T] = []
     }
@@ -38,50 +33,27 @@ class PullUtility {
             let newDate = calendar.date(byAdding: monthAdded, to: today)!
             dateRanges.append(DateRange(year: calendar.component(.year, from: newDate), month: calendar.component(.month, from: newDate)))
         }
-        fetchPullStatsAndWriteToFile(repository: repository, dateRanges: dateRanges)
-    }
-
-    private static func fillUserPulls(pullStatType: PullStatType, stat: Stat, dateRangeAndPulls: DateRangeAndPullsModel, allPulls: [PullSummaryModel]) -> Promise<PullStat> {
-        return Promise<PullStat> { seal in
-            let pullStat = stat.pullStats.filter { $0.dateRange.displayText == dateRangeAndPulls.dateRange.displayText }.first!
-            if pullStatType == .created {
-                pullStat.createdPulls = dateRangeAndPulls.pulls
-            }
-            dateRangeAndPulls.pulls.forEach({ pull in
-                guard let user = pull.user?.login else { return }
-                if pullStat.userPulls[pullStatType]![user] == nil {
-                    var userPull = UserPullModel()
-                    userPull.user = user
-                    pullStat.userPulls[pullStatType]![user] = userPull
-                }
-                pullStat.userPulls[pullStatType]![user]?.pulls.append(pull)
-            })
-            if pullStatType == .created {
-                print("generate pull stat (\(pullStat.dateRange.displayText)) completed. users: \(pullStat.userPulls.count); pulls: \(pullStat.createdPulls.count)")
-            }
-            seal.fulfill(pullStat)
-        }
+        // Create a Stat object to store all pull relative data
+        let stat = Stat(dateRanges: dateRanges)
+        fetchPullStatsAndWriteToFile(repository: repository, dateRanges: dateRanges, stat: stat)
     }
 
     // MARK: Fetchers
-    private static func fetchPullStatsAndWriteToFile(repository: Repository, dateRanges: [DateRange]) {
+    private static func fetchPullStatsAndWriteToFile(repository: Repository, dateRanges: [DateRange], stat: Stat) {
         print("begin fetch all pulls==============")
         fetchAllPagedPulls(repository: repository, firstPage: 1, allPagedPullSummaries: AllPagedModels<PullSummaryModel>()) { allPulls in
             print("end fetch all pulls \(allPulls.count)==============")
-            let stat = Stat()
-            stat.pullStats = dateRanges.map { PullStat(dateRange: $0, userLineAndComments: [:], createdPulls: []) }
             _  = fetchAllPullDetails(pullStatType: .created, stat: stat, dateRanges: dateRanges, allPulls: allPulls).done({ pullStats in
                 _  = fetchAllPullDetails(pullStatType: .merged, stat: stat, dateRanges: dateRanges, allPulls: allPulls).done({ pullStats in
                     _  = fetchCommits(stat: stat, allPulls: allPulls).done({ _ in
-                        _  = fetchCommentsToOthers(stat: stat, allPulls: allPulls, type: .comment).done { _ in
-                            _  = fetchCommentsToOthers(stat: stat, allPulls: allPulls, type: .reviewComment).done({ _ in
+                        _  = fetchCommentsToOthersOfAllPulls(stat: stat, allPulls: allPulls, type: .comment).done { _ in
+                            _  = fetchCommentsToOthersOfAllPulls(stat: stat, allPulls: allPulls, type: .reviewComment).done({ _ in
                                 pullStats.forEach({ pullStat in
                                     pullStat.writeToFile(repository: repository)
                                 })
                             })
                         }
                     })
-
                 })
             })
         }
@@ -109,7 +81,7 @@ class PullUtility {
                 when(fulfilled: fetchMultiplePromise).done({ array in
                     print("fetch all pulls in \(dateRange.displayText) completed, array = \(array.count)")
                     let detailModels = [PullModel].deserialize(from: array)!.compactMap { $0 }
-                    _  = fillUserPulls(pullStatType: pullStatType, stat: stat, dateRangeAndPulls: DateRangeAndPullsModel(dateRange: dateRange, pulls: detailModels), allPulls: allPulls).done({ pullStat in
+                    _  = fillUserPullsIntoStat(pullStatType: pullStatType, stat: stat, dateRange: dateRange, allPullsWithDetail: detailModels).done({ pullStat in
                         seal.fulfill(pullStat)
                     })
                 }).catch({ error in
@@ -119,6 +91,27 @@ class PullUtility {
             promises.append(promise)
         }
         return when(fulfilled: promises)
+    }
+
+    private static func fillUserPullsIntoStat(pullStatType: PullStatType, stat: Stat, dateRange: DateRange, allPullsWithDetail: [PullModel]) -> Promise<PullStat> {
+        return Promise<PullStat> { seal in
+            let pullStat = stat.pullStats.filter { $0.dateRange.displayText == dateRange.displayText }.first!
+            if pullStatType == .created {
+                pullStat.createdPulls = allPullsWithDetail
+            }
+            allPullsWithDetail.forEach({ pull in
+                guard let user = pull.user?.login else { return }
+                if pullStat.userPulls[pullStatType]![user] == nil {
+                    let userPull = UserPullModel(user: user)
+                    pullStat.userPulls[pullStatType]![user] = userPull
+                }
+                pullStat.userPulls[pullStatType]![user]?.pulls.append(pull)
+            })
+            if pullStatType == .created {
+                print("generate pull stat (\(pullStat.dateRange.displayText)) completed. users: \(pullStat.userPulls.count); pulls: \(pullStat.createdPulls.count)")
+            }
+            seal.fulfill(pullStat)
+        }
     }
 
     private static func fetchAllPagedPulls(repository: Repository, firstPage: Int = 1, allPagedPullSummaries: AllPagedModels<PullSummaryModel>, completionHandler: @escaping ModelsAction<PullSummaryModel>) {
@@ -152,16 +145,17 @@ class PullUtility {
         return result
     }
 
-    private static func fetchCommentsToOthers(stat: Stat, allPulls: [PullSummaryModel], type: CommentType) -> Promise<Bool> {
-        return Promise<Bool> { seal in
-            print("fetch comments to others - \(type.rawValue) (\(allPulls.count))")
-            _  = fetchCommentsToOthersWithBatch(stat: stat, type: type, allPulls: allPulls, page: 0).done({ result in
-                seal.fulfill(result)
-            })
-        }
-    }
+//    private static func fetchCommentsToOthers(stat: Stat, allPulls: [PullSummaryModel], type: CommentType) -> Promise<Bool> {
+//        return Promise<Bool> { seal in
+//            print("fetch comments to others - \(type.rawValue) (\(allPulls.count))")
+//            _  = fetchCommentsToOthersOfAllPulls(stat: stat, type: type, allPulls: allPulls, page: 0).done({ result in
+//                seal.fulfill(result)
+//            })
+//        }
+//    }
 
-    private static func fetchCommentsToOthersWithBatch(stat: Stat, type: CommentType, allPulls: [PullSummaryModel], page: Int) -> Promise<Bool> {
+    private static func fetchCommentsToOthersOfAllPulls(stat: Stat, allPulls: [PullSummaryModel], type: CommentType) -> Promise<Bool> {
+        print("fetch comments to others of all pulls - \(type.rawValue) (\(allPulls.count))")
         return Promise<Bool> { seal in
             var fetchMultiplePromise: [Promise<[CommentModel]>] = []
             allPulls.forEach({ model in
@@ -183,9 +177,7 @@ class PullUtility {
                     let pullStat = stat.pullStats.filter { comment.created_at.contains($0.dateRange.displayText) }.first
                     if let pullStat = pullStat {
                         if pullStat.userLineAndComments[user] == nil {
-                            var userLineAndComment = UserLineAndCommentModel()
-                            userLineAndComment.user = user
-                            pullStat.userLineAndComments[user] = userLineAndComment
+                            pullStat.userLineAndComments[user] = UserLineAndCommentModel(user: user)
                         }
                         pullStat.userLineAndComments[user]!.comments_to_others[type]! += 1
                     }
@@ -202,7 +194,7 @@ class PullUtility {
     private static func fetchCommentsToOthersOfOnePull(firstPage: Int = 1, url: String, allPagedComments: AllPagedModels<CommentModel>) -> Promise<[CommentModel]>  {
         return Promise<[CommentModel]> { seal in
             let urlWithPage = url + "?page=\(firstPage)"
-            _  = ApiRequest<[Any]>.getResponsePromise(url: urlWithPage).done { array in
+            _  = ApiRequest<[Any]>.getResponsePromise(forceFetchFromServer: true, url: urlWithPage).done { array in
                 let models = [CommentModel].deserialize(from: array)!.compactMap { $0 }
                 allPagedModelsLock.lock()
                 allPagedComments.models += models
@@ -227,7 +219,7 @@ class PullUtility {
     private static func fetchCommits(stat: Stat, allPulls: [PullSummaryModel]) -> Promise<Bool> {
         return Promise<Bool> { seal in
             print("fetch commits of pulls (\(allPulls.count))")
-            fetchCommitsWithBatch(stat: stat, allPulls: allPulls, page: 0).done({ result in
+            fetchCommitsWithBatch(stat: stat, allPulls: allPulls).done({ result in
                 seal.fulfill(result)
             }).catch({ error in
                 print(error)
@@ -236,7 +228,7 @@ class PullUtility {
         }
     }
 
-    private static func fetchCommitsWithBatch(stat: Stat, allPulls: [PullSummaryModel], page: Int) -> Promise<Bool> {
+    private static func fetchCommitsWithBatch(stat: Stat, allPulls: [PullSummaryModel]) -> Promise<Bool> {
         return Promise<Bool> { seal in
             var fetchMultiplePromise: [Promise<[CommitModel]>] = []
             allPulls.forEach({ model in
@@ -250,16 +242,14 @@ class PullUtility {
                     if let user = commit.author?.login {
                         modelsAddedLock.lock()
                         stat.allCommits[commit.sha] = commit
+                        // Determine whether the date range is based on the commit date
                         let pullStat = stat.pullStats.filter { commit.commit.committer.date.contains($0.dateRange.displayText) }.first
                         if let pullStat = pullStat {
-                            if pullStat.userLineAndComments[user] == nil {
-                                var userLineAndComment = UserLineAndCommentModel()
-                                userLineAndComment.user = user
-                                pullStat.userLineAndComments[user] = userLineAndComment
-                            }
                             if !commit.commit.message.starts(with: "Merge branch") {
+                                if pullStat.userLineAndComments[user] == nil {
+                                    pullStat.userLineAndComments[user] = UserLineAndCommentModel(user: user)
+                                }
                                 pullStat.userLineAndComments[user]!.commits.append(commit)
-                                pullStat.userLineAndComments[user]!.commit_count += 1
                                 pullStat.userLineAndComments[user]!.additions += commit.stats?.additions ?? 0
                                 pullStat.userLineAndComments[user]!.deletions += commit.stats?.deletions ?? 0
                                 print("lines \(user) additions = \(pullStat.userLineAndComments[user]!.additions) deletions = \(pullStat.userLineAndComments[user]!.deletions)\t\t added: \(commit.stats?.deletions ?? 0)\t\t \(commit.stats?.additions ?? 0)\t\t \(commit.sha!)")

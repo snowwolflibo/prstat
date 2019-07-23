@@ -7,8 +7,7 @@
 //
 
 struct UserLineAndCommentModel {
-    var user: String = ""
-    var commit_count: Int = 0
+    let user: String
     var additions: Int = 0
     var deletions: Int = 0
     var lines: Int { return additions + deletions }
@@ -20,12 +19,16 @@ struct UserLineAndCommentModel {
     var commits: [CommitModel] = []
     var comment_count: Int { return commits.reduce(0) { $0 + $1.review_comments } }
 
+    init(user: String) {
+        self.user = user
+    }
+
     var outputValues: String {
         let array = [
             "\(user)",
             "\(comments_to_others[.comment]!)",
             "\(comments_to_others[.reviewComment]!)",
-            "\(commit_count)",
+            "\(commits.count)",
             "\(additions)",
             "\(deletions)",
             "\(lines)",

@@ -11,6 +11,10 @@ import Foundation
 class Stat {
     var pullStats: [PullStat]!
     var allCommits: [String:CommitModel] = [:]
+
+    init(dateRanges: [DateRange]) {
+        pullStats = dateRanges.map { PullStat(dateRange: $0) }
+    }
 }
 
 class PullStat {
@@ -19,13 +23,11 @@ class PullStat {
         .created: [:],
         .merged: [:]
     ]
-    var userLineAndComments: [String:UserLineAndCommentModel]
-    var createdPulls: [PullModel]
+    var userLineAndComments: [String:UserLineAndCommentModel] = [:]
+    var createdPulls: [PullModel]!
 
-    init(dateRange: DateRange, userLineAndComments: [String:UserLineAndCommentModel], createdPulls: [PullModel]) {
+    init(dateRange: DateRange) {
         self.dateRange = dateRange
-        self.userLineAndComments = userLineAndComments
-        self.createdPulls = createdPulls
     }
 
     private var output: String {

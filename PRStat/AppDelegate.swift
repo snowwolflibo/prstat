@@ -15,7 +15,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
-        let repository: Repository = .tellus_ios
+        let repository: Repository = .zilly_android_china
         CacheUtility.repository = repository
         PullUtility.generatePullStats(repository: repository)
         return true
