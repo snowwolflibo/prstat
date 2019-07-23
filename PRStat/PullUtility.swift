@@ -19,9 +19,6 @@ class PullUtility {
 
     typealias ModelsAction<T> = ([T]) -> Void
 
-    // MARK: Variable
-    private static let pageSize: Int = 30
-
     // MARK: Generator
     static func generatePullStats(repository: Repository) {
         let today = Date()
@@ -41,7 +38,7 @@ class PullUtility {
     // MARK: Fetchers
     private static func fetchPullStatsAndWriteToFile(repository: Repository, dateRanges: [DateRange], stat: Stat) {
         print("begin fetch all pulls==============")
-        fetchAllPagedPulls(repository: repository, firstPage: 1, allPagedPullSummaries: AllPagedModels<PullSummaryModel>()) { allPulls in
+        fetchAllPagedPulls(repository: repository, page: 1, allPagedPullSummaries: AllPagedModels<PullSummaryModel>()) { allPulls in
             print("end fetch all pulls \(allPulls.count)==============")
             _  = fetchAllPullDetails(pullStatType: .created, stat: stat, dateRanges: dateRanges, allPulls: allPulls).done({ pullStats in
                 _  = fetchAllPullDetails(pullStatType: .merged, stat: stat, dateRanges: dateRanges, allPulls: allPulls).done({ pullStats in
@@ -114,20 +111,20 @@ class PullUtility {
         }
     }
 
-    private static func fetchAllPagedPulls(repository: Repository, firstPage: Int = 1, allPagedPullSummaries: AllPagedModels<PullSummaryModel>, completionHandler: @escaping ModelsAction<PullSummaryModel>) {
-        let url = "https://api.github.com/repos/zillyinc/\(repository.rawValue)/pulls?state=all&sort=created&direction=desc&page=\(firstPage)"
+    private static func fetchAllPagedPulls(repository: Repository, page: Int = 1, allPagedPullSummaries: AllPagedModels<PullSummaryModel>, completionHandler: @escaping ModelsAction<PullSummaryModel>) {
+        let url = Config.pullsUrl(repository: repository, page: page)
         _ = ApiRequest<[Any]>.getResponsePromise(forceFetchFromServer: true, url: url).done { array in
             let models = [PullSummaryModel].deserialize(from: array)!.compactMap { $0 }
             allPagedPullSummaries.models += models
             let block = { (action: String) in
                 print("Request:\(url); result count:\(models.count); \(action)")
             }
-            if models.count < pageSize {
+            if models.count < Config.pageSize {
                 block("completed")
                 completionHandler(allPagedPullSummaries.models)
             } else {
                 block("go next page")
-                fetchAllPagedPulls(repository: repository, firstPage: firstPage + 1, allPagedPullSummaries: allPagedPullSummaries, completionHandler: completionHandler)
+                fetchAllPagedPulls(repository: repository, page: page + 1, allPagedPullSummaries: allPagedPullSummaries, completionHandler: completionHandler)
             }
         }
     }
@@ -191,9 +188,9 @@ class PullUtility {
         }
     }
 
-    private static func fetchCommentsToOthersOfOnePull(firstPage: Int = 1, url: String, allPagedComments: AllPagedModels<CommentModel>) -> Promise<[CommentModel]>  {
+    private static func fetchCommentsToOthersOfOnePull(page: Int = 1, url: String, allPagedComments: AllPagedModels<CommentModel>) -> Promise<[CommentModel]>  {
         return Promise<[CommentModel]> { seal in
-            let urlWithPage = url + "?page=\(firstPage)"
+            let urlWithPage = url + "?page=\(page)"
             _  = ApiRequest<[Any]>.getResponsePromise(forceFetchFromServer: true, url: urlWithPage).done { array in
                 let models = [CommentModel].deserialize(from: array)!.compactMap { $0 }
                 allPagedModelsLock.lock()
@@ -202,12 +199,12 @@ class PullUtility {
                 let block = { (action: String) in
                     print("Request:\(url); result count:\(models.count); \(action)")
                 }
-                if models.count < pageSize {
+                if models.count < Config.pageSize {
                     block("completed")
                     seal.fulfill(allPagedComments.models)
                 } else {
                     block("go next page")
-                    _  = fetchCommentsToOthersOfOnePull(firstPage: firstPage + 1, url: url, allPagedComments: allPagedComments).done({ models in
+                    _  = fetchCommentsToOthersOfOnePull(page: page + 1, url: url, allPagedComments: allPagedComments).done({ models in
                         seal.fulfill(models)
                     })
                 }
@@ -266,9 +263,9 @@ class PullUtility {
         }
     }
 
-    private static func fetchCommitsOfOnePull(firstPage: Int = 1, url: String, allPagedCommits: AllPagedModels<CommitModel>) -> Promise<[CommitModel]>  {
+    private static func fetchCommitsOfOnePull(page: Int = 1, url: String, allPagedCommits: AllPagedModels<CommitModel>) -> Promise<[CommitModel]>  {
         return Promise<[CommitModel]> { seal in
-            let urlWithPage = url + "?page=\(firstPage)"
+            let urlWithPage = url + "?page=\(page)"
             ApiRequest<[Any]>.getResponsePromise(forceFetchFromServer: true, url: urlWithPage).done { array in
                 let models = [CommitModel].deserialize(from: array)!.compactMap { $0 }
                 allPagedModelsLock.lock()
@@ -277,7 +274,7 @@ class PullUtility {
                 let block = { (action: String) in
                     print("Request:\(url); result count:\(models.count) allPagedCommits.commits:\(allPagedCommits.models.count); \(action)")
                 }
-                if models.count < pageSize {
+                if models.count < Config.pageSize {
                     block("completed")
                     fetchCommitsBySHA(commits: allPagedCommits.models).done({ _ in
 //                        fetchCommitReviewComments(commits: allPagedCommits.commits).done({ _ in
@@ -290,7 +287,7 @@ class PullUtility {
 
                 } else {
                     block("go next page")
-                    fetchCommitsOfOnePull(firstPage: firstPage + 1, url: url, allPagedCommits: allPagedCommits).done({ models in
+                    fetchCommitsOfOnePull(page: page + 1, url: url, allPagedCommits: allPagedCommits).done({ models in
                         seal.fulfill(models)
                     }).catch({ error in
                         seal.reject(error)

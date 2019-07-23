@@ -29,11 +29,6 @@ struct PullModel: HandyJSON {
     var true_user: UserModel? {
         guard assignees?.count == 1 else { return user }
         return assignees![0]
-//        var assignee = assignees![0]
-//        if let login = Config.aliasAndLoginNameDictionary[assignee.login] {
-//            assignee.login = login
-//        }
-//        return assignee
     }
     var state: PullState = .open
     var title: String = ""

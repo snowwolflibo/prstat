@@ -58,7 +58,7 @@ struct UserPullModel {
     }
 
     static var titleAndLengths = [
-        ("dev",25),
+        ("dev(as unique assignee or creater)",35),
         ("prs",10),
         ("prs_open",10),
         ("prs_closed",15),

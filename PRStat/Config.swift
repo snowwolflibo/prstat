@@ -8,16 +8,8 @@
 
 class Config {
     static let alwaysUseCache = true
-
-//    private static let loginNameAndAliasList: [String:[String]] = [:]
-//
-//    static var aliasAndLoginNameDictionary: [String:String] = {
-//        var dic: [String:String] = [:]
-//        Config.loginNameAndAliasList.keys.forEach { loginName in
-//            Config.loginNameAndAliasList[loginName]?.forEach({ alias in
-//                dic[alias] = loginName
-//            })
-//        }
-//        return dic
-//    }()
+    static let pageSize: Int = 30
+    static func pullsUrl(repository: Repository, page: Int) -> String {
+        return "https://api.github.com/repos/zillyinc/\(repository.rawValue)/pulls?state=all&sort=created&direction=desc&page=\(page)"
+    }
 }
