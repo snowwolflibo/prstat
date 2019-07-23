@@ -22,16 +22,7 @@ class PullUtility {
         var models: [T] = []
     }
 
-//    class AllPagedCommentsModel {
-//        var comments: [CommentModel] = []
-//    }
-//    class AllPagedCommitsModel {
-//        var commits: [CommitModel] = []
-//    }
-
     typealias ModelsAction<T> = ([T]) -> Void
-//    typealias CommentsAction = ([CommentModel]) -> Void
-//    typealias CommitsAction = ([CommitModel]) -> Void
 
     // MARK: Variable
     private static let pageSize: Int = 30
@@ -47,7 +38,7 @@ class PullUtility {
             let newDate = calendar.date(byAdding: monthAdded, to: today)!
             dateRanges.append(DateRange(year: calendar.component(.year, from: newDate), month: calendar.component(.month, from: newDate)))
         }
-        fetchAllPullsCommentsAndWriteToFile(repository: repository, dateRanges: dateRanges)
+        fetchPullStatsAndWriteToFile(repository: repository, dateRanges: dateRanges)
     }
 
     private static func fillUserPulls(pullStatType: PullStatType, stat: Stat, dateRangeAndPulls: DateRangeAndPullsModel, allPulls: [PullSummaryModel]) -> Promise<PullStat> {
@@ -73,7 +64,7 @@ class PullUtility {
     }
 
     // MARK: Fetchers
-    private static func fetchAllPullsCommentsAndWriteToFile(repository: Repository, dateRanges: [DateRange]) {
+    private static func fetchPullStatsAndWriteToFile(repository: Repository, dateRanges: [DateRange]) {
         print("begin fetch all pulls==============")
         fetchAllPagedPulls(repository: repository, firstPage: 1, allPagedPullSummaries: AllPagedModels<PullSummaryModel>()) { allPulls in
             print("end fetch all pulls \(allPulls.count)==============")
@@ -133,19 +124,17 @@ class PullUtility {
     private static func fetchAllPagedPulls(repository: Repository, firstPage: Int = 1, allPagedPullSummaries: AllPagedModels<PullSummaryModel>, completionHandler: @escaping ModelsAction<PullSummaryModel>) {
         let url = "https://api.github.com/repos/zillyinc/\(repository.rawValue)/pulls?state=all&sort=created&direction=desc&page=\(firstPage)"
         _ = ApiRequest<[Any]>.getResponsePromise(forceFetchFromServer: true, url: url).done { array in
-            autoreleasepool {
-                let models = [PullSummaryModel].deserialize(from: array)!.compactMap { $0 }
-                allPagedPullSummaries.models += models
-                let block = { (action: String) in
-                    print("Request:\(url); result count:\(models.count); \(action)")
-                }
-                if models.count < pageSize {
-                    block("completed")
-                    completionHandler(allPagedPullSummaries.models)
-                } else {
-                    block("go next page")
-                    fetchAllPagedPulls(repository: repository, firstPage: firstPage + 1, allPagedPullSummaries: allPagedPullSummaries, completionHandler: completionHandler)
-                }
+            let models = [PullSummaryModel].deserialize(from: array)!.compactMap { $0 }
+            allPagedPullSummaries.models += models
+            let block = { (action: String) in
+                print("Request:\(url); result count:\(models.count); \(action)")
+            }
+            if models.count < pageSize {
+                block("completed")
+                completionHandler(allPagedPullSummaries.models)
+            } else {
+                block("go next page")
+                fetchAllPagedPulls(repository: repository, firstPage: firstPage + 1, allPagedPullSummaries: allPagedPullSummaries, completionHandler: completionHandler)
             }
         }
     }
@@ -174,13 +163,6 @@ class PullUtility {
 
     private static func fetchCommentsToOthersWithBatch(stat: Stat, type: CommentType, allPulls: [PullSummaryModel], page: Int) -> Promise<Bool> {
         return Promise<Bool> { seal in
-//            let pageSize = 20
-//            let pageCount = (allPulls.count - 1) / pageSize + 1
-//            if page >= pageCount {
-//                seal.fulfill(true)
-//                return
-//            }
-//            let pickedPulls = pick(from: allPulls, page: page, pageSize: pageSize)
             var fetchMultiplePromise: [Promise<[CommentModel]>] = []
             allPulls.forEach({ model in
                 let promise = fetchCommentsToOthersOfOnePull(url: model.commentsUrl(type: type), allPagedComments: AllPagedModels<CommentModel>())
@@ -210,9 +192,6 @@ class PullUtility {
                     modelsAddedLock.unlock()
                 })
                 seal.fulfill(true)
-//                _  = fetchCommentsToOthersWithBatch(pullStats: pullStats, type: type, allPulls: allPulls, page: page + 1).done({ result in
-//                    seal.fulfill(result)
-//                })
             }).catch({ error in
                 print(error)
                 seal.reject(error)
@@ -350,7 +329,6 @@ class PullUtility {
                 })
         }
     }
-
 
     private static func fetchCommitBySHA(commit: CommitModel) -> Promise<Bool>  {
         return Promise<Bool> { seal in
