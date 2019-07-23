@@ -192,14 +192,11 @@ class PullUtility {
                 allComments.forEach({ comment in
                     let user = comment.user.login
                     modelsAddedLock.lock()
-                    if let commit_id = comment.commit_id {
-                        if stat.allCommits[commit_id] == nil {
-                            stat.allCommits[commit_id] = CommitModel()
-                            stat.allCommits[commit_id]!.review_comments = 1
-                        } else {
+                    if let commit_id = comment.original_commit_id {
+                        if stat.allCommits[commit_id] != nil {
                             stat.allCommits[commit_id]!.review_comments += 1
+                            print("\(user) add comment to \(stat.allCommits[commit_id]!.author.login)'s commit \(commit_id) review_comments = \(stat.allCommits[commit_id]!.review_comments) comment_id:\(comment.id!)")
                         }
-                        print("stat.allCommits[\(commit_id)]!.review_comments = \(stat.allCommits[commit_id]!.review_comments)")
                     }
                     let pullStat = stat.pullStats.filter { comment.created_at.contains($0.dateRange.displayText) }.first
                     if let pullStat = pullStat {
@@ -281,9 +278,9 @@ class PullUtility {
                             userLineAndComment.user = user
                             pullStat.userLineAndComments[user] = userLineAndComment
                         }
-                        pullStat.userLineAndComments[user]!.commits.append(commit)
 //                        pullStat.userLineAndComments[user]!.comment_count += commit.commit.comment_count
                         if !commit.commit.message.starts(with: "Merge branch") {
+                            pullStat.userLineAndComments[user]!.commits.append(commit)
                             pullStat.userLineAndComments[user]!.additions += commit.stats?.additions ?? 0
                             pullStat.userLineAndComments[user]!.deletions += commit.stats?.deletions ?? 0
                             print("lines \(user) additions = \(pullStat.userLineAndComments[user]!.additions) deletions = \(pullStat.userLineAndComments[user]!.deletions)\t\t added: \(commit.stats?.deletions ?? 0)\t\t \(commit.stats?.additions ?? 0)\t\t \(commit.sha!)")
