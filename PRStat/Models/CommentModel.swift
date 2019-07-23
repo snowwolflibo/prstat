@@ -11,4 +11,5 @@ import HandyJSON
 struct CommentModel: HandyJSON {
     var user: UserModel!
     var created_at: String = ""
+    var commit_id: String!
 }

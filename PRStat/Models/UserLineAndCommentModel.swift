@@ -11,12 +11,13 @@ struct UserLineAndCommentModel {
     var additions: Int = 0
     var deletions: Int = 0
     var lines: Int { return additions + deletions }
-    var comment_count: Int = 0
     var review_comments_per_lines: Int { return lines == 0 ? 0 : comment_count * 1000 / lines }
     var comments_to_others: [CommentType:Int] = [
         .comment: 0,
         .reviewComment: 0
     ]
+    var commits: [CommitModel] = []
+    var comment_count: Int { return commits.reduce(0) { $0 + $1.review_comments } }
 
     var outputValues: String {
         let array = [

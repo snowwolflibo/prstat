@@ -24,7 +24,7 @@ class CommitModel: HandyJSON {
         var deletions: Int = 0
         var displayText: String { return "additions:\(additions);deletions:\(deletions)" }
     }
-
+    var review_comments: Int = 0
     var author: UserModel!
     var sha: String!
     var url: String!

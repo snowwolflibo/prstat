@@ -8,6 +8,11 @@
 
 import Foundation
 
+class Stat {
+    var pullStats: [PullStat]!
+    var allCommits: [String:CommitModel] = [:]
+}
+
 class PullStat {
     var dateRange: DateRange
     var userPulls: [PullStatType:[String:UserPullModel]] = [

@@ -50,9 +50,9 @@ class PullUtility {
         fetchAllPullsCommentsAndWriteToFile(repository: repository, dateRanges: dateRanges)
     }
 
-    private static func fillUserPulls(pullStatType: PullStatType, allPullStats: [PullStat], dateRangeAndPulls: DateRangeAndPullsModel, allPulls: [PullSummaryModel]) -> Promise<PullStat> {
+    private static func fillUserPulls(pullStatType: PullStatType, stat: Stat, dateRangeAndPulls: DateRangeAndPullsModel, allPulls: [PullSummaryModel]) -> Promise<PullStat> {
         return Promise<PullStat> { seal in
-            let pullStat = allPullStats.filter { $0.dateRange.displayText == dateRangeAndPulls.dateRange.displayText }.first!
+            let pullStat = stat.pullStats.filter { $0.dateRange.displayText == dateRangeAndPulls.dateRange.displayText }.first!
             if pullStatType == .created {
                 pullStat.createdPulls = dateRangeAndPulls.pulls
             }
@@ -77,27 +77,26 @@ class PullUtility {
         print("begin fetch all pulls==============")
         fetchAllPagedPulls(repository: repository, firstPage: 1, allPagedPullSummaries: AllPagedPullSummarysModel()) { allPulls in
             print("end fetch all pulls \(allPulls.count)==============")
-            let allPullStats = dateRanges.map { PullStat(dateRange: $0, userLineAndComments: [:], createdPulls: []) }
-            _  = fetchAllPullDetails(pullStatType: .created, allPullStats: allPullStats, dateRanges: dateRanges, allPulls: allPulls).done({ pullStats in
-                _  = fetchAllPullDetails(pullStatType: .merged, allPullStats: allPullStats, dateRanges: dateRanges, allPulls: allPulls).done({ pullStats in
-                    _  = fetchCommentsToOthers(pullStats: pullStats, allPulls: allPulls, type: .comment).done { _ in
-                        _  = fetchCommentsToOthers(pullStats: pullStats, allPulls: allPulls, type: .reviewComment).done({ _ in
-                            _  = fetchCommits(pullStats: pullStats, allPulls: allPulls).done({ _ in
+            let stat = Stat()
+            stat.pullStats = dateRanges.map { PullStat(dateRange: $0, userLineAndComments: [:], createdPulls: []) }
+            _  = fetchAllPullDetails(pullStatType: .created, stat: stat, dateRanges: dateRanges, allPulls: allPulls).done({ pullStats in
+                _  = fetchAllPullDetails(pullStatType: .merged, stat: stat, dateRanges: dateRanges, allPulls: allPulls).done({ pullStats in
+                    _  = fetchCommits(stat: stat, allPulls: allPulls).done({ _ in
+                        _  = fetchCommentsToOthers(stat: stat, allPulls: allPulls, type: .comment).done { _ in
+                            _  = fetchCommentsToOthers(stat: stat, allPulls: allPulls, type: .reviewComment).done({ _ in
                                 pullStats.forEach({ pullStat in
                                     pullStat.writeToFile()
                                 })
                             })
-//                            pullStats.forEach({ pullStat in
-//                                pullStat.writeToFile()
-//                            })
-                        })
-                    }
+                        }
+                    })
+
                 })
             })
         }
     }
 
-    private static func fetchAllPullDetails(pullStatType: PullStatType, allPullStats: [PullStat], dateRanges: [DateRange], allPulls: [PullSummaryModel]) -> Promise<[PullStat]> {
+    private static func fetchAllPullDetails(pullStatType: PullStatType, stat: Stat, dateRanges: [DateRange], allPulls: [PullSummaryModel]) -> Promise<[PullStat]> {
         var promises = [Promise<PullStat>]()
         dateRanges.forEach { dateRange in
             let promise = Promise<PullStat> { seal in
@@ -119,7 +118,7 @@ class PullUtility {
                 when(fulfilled: fetchMultiplePromise).done({ array in
                     print("fetch all pulls in \(dateRange.displayText) completed, array = \(array.count)")
                     let detailModels = [PullModel].deserialize(from: array)!.compactMap { $0 }
-                    _  = fillUserPulls(pullStatType: pullStatType, allPullStats: allPullStats, dateRangeAndPulls: DateRangeAndPullsModel(dateRange: dateRange, pulls: detailModels), allPulls: allPulls).done({ pullStat in
+                    _  = fillUserPulls(pullStatType: pullStatType, stat: stat, dateRangeAndPulls: DateRangeAndPullsModel(dateRange: dateRange, pulls: detailModels), allPulls: allPulls).done({ pullStat in
                         seal.fulfill(pullStat)
                     })
                 }).catch({ error in
@@ -164,26 +163,26 @@ class PullUtility {
         return result
     }
 
-    private static func fetchCommentsToOthers(pullStats: [PullStat], allPulls: [PullSummaryModel], type: CommentType) -> Promise<Bool> {
+    private static func fetchCommentsToOthers(stat: Stat, allPulls: [PullSummaryModel], type: CommentType) -> Promise<Bool> {
         return Promise<Bool> { seal in
             print("fetch comments to others - \(type.rawValue) (\(allPulls.count))")
-            _  = fetchCommentsToOthersWithBatch(pullStats: pullStats, type: type, allPulls: allPulls, page: 0).done({ result in
+            _  = fetchCommentsToOthersWithBatch(stat: stat, type: type, allPulls: allPulls, page: 0).done({ result in
                 seal.fulfill(result)
             })
         }
     }
 
-    private static func fetchCommentsToOthersWithBatch(pullStats: [PullStat], type: CommentType, allPulls: [PullSummaryModel], page: Int) -> Promise<Bool> {
+    private static func fetchCommentsToOthersWithBatch(stat: Stat, type: CommentType, allPulls: [PullSummaryModel], page: Int) -> Promise<Bool> {
         return Promise<Bool> { seal in
-            let pageSize = 20
-            let pageCount = (allPulls.count - 1) / pageSize + 1
-            if page >= pageCount {
-                seal.fulfill(true)
-                return
-            }
-            let pickedPulls = pick(from: allPulls, page: page, pageSize: pageSize)
+//            let pageSize = 20
+//            let pageCount = (allPulls.count - 1) / pageSize + 1
+//            if page >= pageCount {
+//                seal.fulfill(true)
+//                return
+//            }
+//            let pickedPulls = pick(from: allPulls, page: page, pageSize: pageSize)
             var fetchMultiplePromise: [Promise<[CommentModel]>] = []
-            pickedPulls.forEach({ model in
+            allPulls.forEach({ model in
                 let promise = fetchCommentsToOthersOfOnePull(url: model.commentsUrl(type: type), allPagedComments: AllPagedCommentsModel())
                 fetchMultiplePromise.append(promise)
             })
@@ -193,7 +192,16 @@ class PullUtility {
                 allComments.forEach({ comment in
                     let user = comment.user.login
                     modelsAddedLock.lock()
-                    let pullStat = pullStats.filter { comment.created_at.contains($0.dateRange.displayText) }.first
+                    if let commit_id = comment.commit_id {
+                        if stat.allCommits[commit_id] == nil {
+                            stat.allCommits[commit_id] = CommitModel()
+                            stat.allCommits[commit_id]!.review_comments = 1
+                        } else {
+                            stat.allCommits[commit_id]!.review_comments += 1
+                        }
+                        print("stat.allCommits[\(commit_id)]!.review_comments = \(stat.allCommits[commit_id]!.review_comments)")
+                    }
+                    let pullStat = stat.pullStats.filter { comment.created_at.contains($0.dateRange.displayText) }.first
                     if let pullStat = pullStat {
                         if pullStat.userLineAndComments[user] == nil {
                             var userLineAndComment = UserLineAndCommentModel()
@@ -204,9 +212,10 @@ class PullUtility {
                     }
                     modelsAddedLock.unlock()
                 })
-                _  = fetchCommentsToOthersWithBatch(pullStats: pullStats, type: type, allPulls: allPulls, page: page + 1).done({ result in
-                    seal.fulfill(result)
-                })
+                seal.fulfill(true)
+//                _  = fetchCommentsToOthersWithBatch(pullStats: pullStats, type: type, allPulls: allPulls, page: page + 1).done({ result in
+//                    seal.fulfill(result)
+//                })
             }).catch({ error in
                 print(error)
                 seal.reject(error)
@@ -239,10 +248,10 @@ class PullUtility {
     }
 
     // MARK: Fetcher - Commits
-    private static func fetchCommits(pullStats: [PullStat], allPulls: [PullSummaryModel]) -> Promise<Bool> {
+    private static func fetchCommits(stat: Stat, allPulls: [PullSummaryModel]) -> Promise<Bool> {
         return Promise<Bool> { seal in
             print("fetch commits of pulls (\(allPulls.count))")
-            fetchCommitsWithBatch(pullStats: pullStats, allPulls: allPulls, page: 0).done({ result in
+            fetchCommitsWithBatch(stat: stat, allPulls: allPulls, page: 0).done({ result in
                 seal.fulfill(result)
             }).catch({ error in
                 print(error)
@@ -251,7 +260,7 @@ class PullUtility {
         }
     }
 
-    private static func fetchCommitsWithBatch(pullStats: [PullStat], allPulls: [PullSummaryModel], page: Int) -> Promise<Bool> {
+    private static func fetchCommitsWithBatch(stat: Stat, allPulls: [PullSummaryModel], page: Int) -> Promise<Bool> {
         return Promise<Bool> { seal in
             var fetchMultiplePromise: [Promise<[CommitModel]>] = []
             allPulls.forEach({ model in
@@ -264,14 +273,16 @@ class PullUtility {
                 allCommits.forEach({ commit in
                     let user = commit.author.login
                     modelsAddedLock.lock()
-                    let pullStat = pullStats.filter { commit.commit.committer.date.contains($0.dateRange.displayText) }.first
+                    stat.allCommits[commit.sha] = commit
+                    let pullStat = stat.pullStats.filter { commit.commit.committer.date.contains($0.dateRange.displayText) }.first
                     if let pullStat = pullStat {
                         if pullStat.userLineAndComments[user] == nil {
                             var userLineAndComment = UserLineAndCommentModel()
                             userLineAndComment.user = user
                             pullStat.userLineAndComments[user] = userLineAndComment
                         }
-                        pullStat.userLineAndComments[user]!.comment_count += commit.commit.comment_count
+                        pullStat.userLineAndComments[user]!.commits.append(commit)
+//                        pullStat.userLineAndComments[user]!.comment_count += commit.commit.comment_count
                         if !commit.commit.message.starts(with: "Merge branch") {
                             pullStat.userLineAndComments[user]!.additions += commit.stats?.additions ?? 0
                             pullStat.userLineAndComments[user]!.deletions += commit.stats?.deletions ?? 0
@@ -363,42 +374,42 @@ class PullUtility {
         }
     }
 
-    // MARK: Fetcher - Commits - Review Comments
-    private static func fetchCommitReviewComments(commits: [CommitModel]) -> Promise<Bool> {
-        print("begin fetchCommitReviewComments")
-        return Promise<Bool> { seal in
-            var fetchMultiplePromise: [Promise<Bool>] = []
-            commits.forEach({ model in
-                let promise = fetchCommitReviewComment(commit: model)
-                fetchMultiplePromise.append(promise)
-            })
-            when(fulfilled: fetchMultiplePromise).done { _ in
-                seal.fulfill(true)
-                }.catch({ error in
-                    print(error)
-                    seal.fulfill(true)
-                })
-        }
-    }
-
-    private static func fetchCommitReviewComment(commit: CommitModel) -> Promise<Bool>  {
-        return Promise<Bool> { seal in
-            let url = commit.comments_url!
-            ApiRequest<[Any]>.getResponsePromise(url: url).done { data in
-                if let models = [CommentModel].deserialize(from: data) {
-                    allPagedModelsLock.lock()
-                    commit.commit.comment_count = models.compactMap { $0 }.count
-                    allPagedModelsLock.unlock()
-                    print("Request:\(url); commit.commit.comment_count \(commit.commit.comment_count)")
-                } else {
-                    print("Request:\(url); return nil")
-                }
-                seal.fulfill(true)
-                }.catch({ error in
-                    print(error)
-                    seal.fulfill(true)
-                })
-        }
-    }
+//    // MARK: Fetcher - Commits - Review Comments
+//    private static func fetchCommitReviewComments(commits: [CommitModel]) -> Promise<Bool> {
+//        print("begin fetchCommitReviewComments")
+//        return Promise<Bool> { seal in
+//            var fetchMultiplePromise: [Promise<Bool>] = []
+//            commits.forEach({ model in
+//                let promise = fetchCommitReviewComment(commit: model)
+//                fetchMultiplePromise.append(promise)
+//            })
+//            when(fulfilled: fetchMultiplePromise).done { _ in
+//                seal.fulfill(true)
+//                }.catch({ error in
+//                    print(error)
+//                    seal.fulfill(true)
+//                })
+//        }
+//    }
+//
+//    private static func fetchCommitReviewComment(commit: CommitModel) -> Promise<Bool>  {
+//        return Promise<Bool> { seal in
+//            let url = commit.comments_url!
+//            ApiRequest<[Any]>.getResponsePromise(url: url).done { data in
+//                if let models = [CommentModel].deserialize(from: data) {
+//                    allPagedModelsLock.lock()
+//                    commit.commit.comment_count = models.compactMap { $0 }.count
+//                    allPagedModelsLock.unlock()
+//                    print("Request:\(url); commit.commit.comment_count \(commit.commit.comment_count)")
+//                } else {
+//                    print("Request:\(url); return nil")
+//                }
+//                seal.fulfill(true)
+//                }.catch({ error in
+//                    print(error)
+//                    seal.fulfill(true)
+//                })
+//        }
+//    }
 }
 
