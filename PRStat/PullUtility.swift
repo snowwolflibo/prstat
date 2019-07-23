@@ -27,7 +27,7 @@ class PullUtility {
         let today = Date()
         let calendar = Calendar(identifier: .gregorian)
         var dateRanges: [DateRange] = []
-        for i in 0..<2 {
+        for i in 0..<5 {
             var monthAdded = DateComponents()
             monthAdded.month = -i
             let newDate = calendar.date(byAdding: monthAdded, to: today)!

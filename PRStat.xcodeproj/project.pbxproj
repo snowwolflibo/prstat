@@ -26,6 +26,7 @@
 		E8DA9B1322E614B50040EA3A /* UserLineAndCommentModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8DA9B1222E614B50040EA3A /* UserLineAndCommentModel.swift */; };
 		E8DA9B1522E615010040EA3A /* CommentModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8DA9B1422E615010040EA3A /* CommentModel.swift */; };
 		E8DA9B1722E615120040EA3A /* CommitModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8DA9B1622E615120040EA3A /* CommitModel.swift */; };
+		E8DA9B1922E728170040EA3A /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8DA9B1822E728170040EA3A /* Config.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -51,6 +52,7 @@
 		E8DA9B1222E614B50040EA3A /* UserLineAndCommentModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserLineAndCommentModel.swift; sourceTree = "<group>"; };
 		E8DA9B1422E615010040EA3A /* CommentModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentModel.swift; sourceTree = "<group>"; };
 		E8DA9B1622E615120040EA3A /* CommitModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommitModel.swift; sourceTree = "<group>"; };
+		E8DA9B1822E728170040EA3A /* Config.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
 		FA432B7867FDB97C993784BE /* Pods-PRStat.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PRStat.release.xcconfig"; path = "Target Support Files/Pods-PRStat/Pods-PRStat.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -108,6 +110,7 @@
 				E86F8C9A22E4403300F29B6D /* FileUtility.swift */,
 				E86F8C9C22E44C3000F29B6D /* LogUtility.swift */,
 				E805482C22E5AF7B008E7E4B /* CacheUtility.swift */,
+				E8DA9B1822E728170040EA3A /* Config.swift */,
 			);
 			path = PRStat;
 			sourceTree = "<group>";
@@ -245,6 +248,7 @@
 				E8DA9B0D22E612C20040EA3A /* CommonModel.swift in Sources */,
 				E86F8C9922E4054100F29B6D /* PullModel.swift in Sources */,
 				E8DA9B1522E615010040EA3A /* CommentModel.swift in Sources */,
+				E8DA9B1922E728170040EA3A /* Config.swift in Sources */,
 				E8DA9B1322E614B50040EA3A /* UserLineAndCommentModel.swift in Sources */,
 				E86F8C7C22E3100B00F29B6D /* AppDelegate.swift in Sources */,
 			);
