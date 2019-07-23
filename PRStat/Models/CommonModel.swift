@@ -9,18 +9,17 @@
 import HandyJSON
 
 enum Repository: String {
-    case iOS = "tellus-ios"
-    case android = "tellus-android"
+    case tellus_ios = "tellus-ios"
+    case tellus_android = "tellus-android"
+    case zilly_android_china = "zilly-android-china"
 }
 
 enum PullState: String, HandyJSONEnum {
-    case open
-    case closed
+    case open, closed
 }
 
 enum PullStatType: String {
-    case created
-    case merged
+    case created, merged
 }
 
 enum CommentType: String {

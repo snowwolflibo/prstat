@@ -11,8 +11,10 @@ import CommonCrypto
 
 class CacheUtility: NSObject  {
 
+    static var repository: Repository!
+
     static func filePath(url: String) -> String {
-        return FileUtility.documentFilePath(for: "cache/" + url.md5() + ".txt")
+        return FileUtility.documentFilePath(for: "\(repository.rawValue)/cache/" + url.md5() + ".txt")
     }
 
     static func getData(url: String) -> Any? {

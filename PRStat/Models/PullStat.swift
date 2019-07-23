@@ -50,7 +50,7 @@ class PullStat {
         let sortedUserLinesAndComments = userLineAndComments.values.sorted { model1, model2 -> Bool in
             return model1.user.compare(model2.user) == .orderedAscending
         }
-        result = addLine(original: result, newLine: "\r\n============= user lines and comments (\(userLineAndComments.count)) ==============\r\n")
+        result = addLine(original: result, newLine: "\r\n============= user lines and comments ==============\r\n")
         result = addLine(original: result, newLine: UserLineAndCommentModel.outputTitles)
         sortedUserLinesAndComments.forEach {
             result = addLine(original: result, newLine: $0.outputValues)
@@ -77,12 +77,11 @@ class PullStat {
         return original + newLine + "\r\n"
     }
 
-    func writeToFile() {
+    func writeToFile(repository: Repository) {
         //输出结果出文本文件
-        let outputPath = FileUtility.documentFilePath(for: "pullStat-\(dateRange.displayText).txt")
-        if FileManager.default.fileExists(atPath: outputPath) {
-            try? FileManager.default.removeItem(atPath: outputPath)
-        }
+        let outputPath = FileUtility.documentFilePath(for: "\(repository.rawValue)/pullStat-\(dateRange.displayText).txt")
+        FileUtility.createDirectoryIfNeed(path: outputPath)
+        if FileManager.default.fileExists(atPath: outputPath) { try? FileManager.default.removeItem(atPath: outputPath) }
         print("Please open \(outputPath) to see the pulls stat")
         let outputURL = URL(fileURLWithPath: outputPath)
         FileManager.default.createFile(atPath: outputPath, contents: nil, attributes: nil)

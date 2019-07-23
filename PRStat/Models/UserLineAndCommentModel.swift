@@ -8,6 +8,7 @@
 
 struct UserLineAndCommentModel {
     var user: String = ""
+    var commit_count: Int = 0
     var additions: Int = 0
     var deletions: Int = 0
     var lines: Int { return additions + deletions }
@@ -24,6 +25,7 @@ struct UserLineAndCommentModel {
             "\(user)",
             "\(comments_to_others[.comment]!)",
             "\(comments_to_others[.reviewComment]!)",
+            "\(commit_count)",
             "\(additions)",
             "\(deletions)",
             "\(lines)",
@@ -39,6 +41,7 @@ struct UserLineAndCommentModel {
         ("dev",25),
         ("comments_given",20),
         ("rev_comments_given",20),
+        ("commits",10),
         ("lines_add",15),
         ("lines_del",15),
         ("lines",15),

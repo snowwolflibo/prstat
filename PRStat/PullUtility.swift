@@ -85,7 +85,7 @@ class PullUtility {
                         _  = fetchCommentsToOthers(stat: stat, allPulls: allPulls, type: .comment).done { _ in
                             _  = fetchCommentsToOthers(stat: stat, allPulls: allPulls, type: .reviewComment).done({ _ in
                                 pullStats.forEach({ pullStat in
-                                    pullStat.writeToFile()
+                                    pullStat.writeToFile(repository: repository)
                                 })
                             })
                         }
@@ -281,6 +281,7 @@ class PullUtility {
 //                        pullStat.userLineAndComments[user]!.comment_count += commit.commit.comment_count
                         if !commit.commit.message.starts(with: "Merge branch") {
                             pullStat.userLineAndComments[user]!.commits.append(commit)
+                            pullStat.userLineAndComments[user]!.commit_count += 1
                             pullStat.userLineAndComments[user]!.additions += commit.stats?.additions ?? 0
                             pullStat.userLineAndComments[user]!.deletions += commit.stats?.deletions ?? 0
                             print("lines \(user) additions = \(pullStat.userLineAndComments[user]!.additions) deletions = \(pullStat.userLineAndComments[user]!.deletions)\t\t added: \(commit.stats?.deletions ?? 0)\t\t \(commit.stats?.additions ?? 0)\t\t \(commit.sha!)")

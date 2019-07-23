@@ -12,11 +12,10 @@ struct PullSummaryModel: HandyJSON {
     var number: Int = 0
     var created_at: String = ""
     var merged_at: String?
-    var closed_at: String?
     var url: String = ""
     var commits_url: String = ""
-    var review_comments_url: String = ""
     var comments_url: String = ""
+    var review_comments_url: String = ""
     func commentsUrl(type: CommentType) -> String {
         return type == .comment ? comments_url : review_comments_url
     }
@@ -24,11 +23,11 @@ struct PullSummaryModel: HandyJSON {
 
 struct PullModel: HandyJSON {
     var number: Int = 0
+    var url: String = ""
     var user: UserModel?
     var state: PullState = .open
     var title: String = ""
     var created_at: String = ""
-    var updated_at: String = ""
     var merged_at: String?
     var duration: Int {
         let createdDate = date(from: created_at)
@@ -38,14 +37,13 @@ struct PullModel: HandyJSON {
     }
     var durationString: String { return "\(duration) days" }
     var merged: Bool = false
-    var comments: Int = 0
-    var review_comments: Int = 0
     var commits: Int = 0
     var additions: Int = 0
     var deletions: Int = 0
     var changed_lines: Int { return additions + deletions }
     var changed_files: Int = 0
-    var url: String = ""
+    var comments: Int = 0
+    var review_comments: Int = 0
     var titleOutput: String { return "title:\(title)(\(url))\tuser:\(user?.login ?? "")" }
 
     var detailOutput: String {
