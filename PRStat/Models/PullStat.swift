@@ -59,7 +59,7 @@ class PullStat {
         }
         // Pulls
         let sortedPulls = createdPulls.sorted { pull1, pull2 -> Bool in
-            let compareResult = pull1.user!.login.compare(pull2.user!.login)
+            let compareResult = pull1.true_user!.login.compare(pull2.true_user!.login)
             if compareResult == .orderedSame {
                 return pull1.number > pull2.number
             } else {

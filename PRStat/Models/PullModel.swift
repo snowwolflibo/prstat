@@ -24,7 +24,17 @@ struct PullSummaryModel: HandyJSON {
 struct PullModel: HandyJSON {
     var number: Int = 0
     var url: String = ""
-    var user: UserModel?
+    private var user: UserModel?
+    private var assignees: [UserModel]?
+    var true_user: UserModel? {
+        guard assignees?.count == 1 else { return user }
+        return assignees![0]
+//        var assignee = assignees![0]
+//        if let login = Config.aliasAndLoginNameDictionary[assignee.login] {
+//            assignee.login = login
+//        }
+//        return assignee
+    }
     var state: PullState = .open
     var title: String = ""
     var created_at: String = ""

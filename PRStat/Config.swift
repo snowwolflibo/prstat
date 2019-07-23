@@ -8,4 +8,16 @@
 
 class Config {
     static let alwaysUseCache = true
+
+//    private static let loginNameAndAliasList: [String:[String]] = [:]
+//
+//    static var aliasAndLoginNameDictionary: [String:String] = {
+//        var dic: [String:String] = [:]
+//        Config.loginNameAndAliasList.keys.forEach { loginName in
+//            Config.loginNameAndAliasList[loginName]?.forEach({ alias in
+//                dic[alias] = loginName
+//            })
+//        }
+//        return dic
+//    }()
 }

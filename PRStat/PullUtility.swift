@@ -100,7 +100,7 @@ class PullUtility {
                 pullStat.createdPulls = allPullsWithDetail
             }
             allPullsWithDetail.forEach({ pull in
-                guard let user = pull.user?.login else { return }
+                guard let user = pull.true_user?.login else { return }
                 if pullStat.userPulls[pullStatType]![user] == nil {
                     let userPull = UserPullModel(user: user)
                     pullStat.userPulls[pullStatType]![user] = userPull
