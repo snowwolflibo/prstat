@@ -11,7 +11,7 @@ struct UserLineAndCommentModel {
     var additions: Int = 0
     var deletions: Int = 0
     var lines: Int { return additions + deletions }
-    var review_comments_per_lines: Int { return lines == 0 ? 0 : comment_count * 1000 / lines }
+    var review_comments_per_lines: Float { return lines == 0 ? 0 : Float(comment_count * 1000) / Float(lines) }
     var comments_to_others: [CommentType:Int] = [
         .comment: 0,
         .reviewComment: 0
@@ -26,18 +26,19 @@ struct UserLineAndCommentModel {
     var outputValues: String {
         let array = [
             "\(user)",
-            "\(comments_to_others[.comment]!)",
-            "\(comments_to_others[.reviewComment]!)",
-            "\(commits.count)",
-            "\(additions)",
-            "\(deletions)",
-            "\(lines)",
-            "\(comment_count)",
-            "\(review_comments_per_lines)"
+            "\(comments_to_others[.comment]!.commaString)",
+            "\(comments_to_others[.reviewComment]!.commaString)",
+            "\(commits.count.commaString)",
+            "\(additions.commaString)",
+            "\(deletions.commaString)",
+            "\(lines.commaString)",
+            "\(comment_count.commaString)",
+            formatted(review_comments_per_lines).commaString
         ]
-        var result = ""
-        array.enumerated().forEach { (index, text) in result += textWithTab(text: text, length: UserLineAndCommentModel.titleAndLengths[index].1) }
-        return result
+//        var result = ""
+//        array.enumerated().forEach { (index, text) in result += textWithTab(text: text, length: UserLineAndCommentModel.titleAndLengths[index].1) }
+//        return result
+        return Output.textWithTab(array: array, titleAndLengths: UserLineAndCommentModel.titleAndLengths)
     }
 
     static var titleAndLengths = [
@@ -53,7 +54,8 @@ struct UserLineAndCommentModel {
     ]
 
     static var outputTitles: String {
-        let array = titleAndLengths
-        return array.reduce("") { $0 + textWithTab(text: $1.0, length: $1.1) }
+        return Output.outputTitles(array: titleAndLengths)
+//        let array = titleAndLengths
+//        return array.reduce("") { $0 + textWithTab(text: $1.0, length: $1.1) }
     }
 }

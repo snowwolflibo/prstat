@@ -26,6 +26,18 @@ class PullStat {
     var userLineAndComments: [String:UserLineAndCommentModel] = [:]
     var createdPulls: [PullModel]!
 
+    var userAndPulls: [String:[PullModel]] {
+        var result: [String:[PullModel]] = [:]
+        createdPulls.forEach { pull in
+            guard let user = pull.true_user?.login else { return }
+            if result[user] == nil {
+                result[user] = [PullModel]()
+            }
+            result[user]?.append(pull)
+        }
+        return result
+    }
+
     init(dateRange: DateRange) {
         self.dateRange = dateRange
     }
@@ -67,9 +79,18 @@ class PullStat {
             }
         }
         result = addLine(original: result, newLine: "\r\n============= new pulls (\(sortedPulls.count))==============\r\n")
+        result = addLine(original: result, newLine: PullModel.outputTitles)
         sortedPulls.forEach {
-            result = addLine(original: result, newLine: $0.titleOutput)
-            result = addLine(original: result, newLine: $0.detailOutput)
+            result = addLine(original: result, newLine: $0.outputValues)
+        }
+        // User Pull Lins
+        let userAndPulls = self.userAndPulls
+        result = addLine(original: result, newLine: "\r\n============= new pull links (\(sortedPulls.count)) ==============\r\n")
+        userAndPulls.forEach { user, pulls in
+            result = addLine(original: result, newLine: "\(user) \(pulls.count) links:")
+            pulls.forEach({ pull in
+                result = addLine(original: result, newLine: "\(pull.title) \(pull.url)")
+            })
             result = addLine(original: result, newLine: "")
         }
         return result

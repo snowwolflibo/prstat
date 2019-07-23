@@ -13,20 +13,20 @@ struct UserPullModel {
     var commits: Int { return pulls.reduce(0) { $0 + $1.commits } }
     var comments: Int { return pulls.reduce(0) { $0 + $1.comments } }
     var review_comments: Int { return pulls.reduce(0) { $0 + $1.review_comments } }
-    var average_duration_per_pull: Int { return created_pulls == 0 ? 0 : pulls.reduce(0) { $0 + $1.duration } / created_pulls }
-    var average_duration_per_pull_string: String { return "\(average_duration_per_pull) days" }
-    var average_commits_per_pull: Int { return created_pulls == 0 ? 0 : commits / created_pulls }
-    var average_comments_per_pull: Int { return created_pulls == 0 ? 0 : comments / created_pulls }
-    var average_review_comments_per_pull: Int { return created_pulls == 0 ? 0 : review_comments / created_pulls }
+    var average_duration_per_pull: Float { return created_pulls == 0 ? 0 : Float(pulls.reduce(0) { $0 + $1.duration }) / Float(created_pulls) }
+    var average_duration_per_pull_string: String { return "\(formatted(average_duration_per_pull)) days" }
+    var average_commits_per_pull: Float { return created_pulls == 0 ? 0 : Float(commits) / Float(created_pulls) }
+    var average_comments_per_pull: Float { return created_pulls == 0 ? 0 : Float(comments) / Float(created_pulls) }
+    var average_review_comments_per_pull: Float { return created_pulls == 0 ? 0 : Float(review_comments) / Float(created_pulls) }
     var additions: Int { return pulls.reduce(0) { $0 + $1.additions } }
     var deletions: Int { return pulls.reduce(0) { $0 + $1.deletions } }
     var changed_lines: Int { return additions + deletions }
-    var average_lines_per_pull: Int { return created_pulls == 0 ? 0 : changed_lines / created_pulls }
+    var average_lines_per_pull: Float { return created_pulls == 0 ? 0 : Float(changed_lines) / Float(created_pulls) }
     var open_pulls: Int { return pulls.filter { $0.state == .open }.count }
     var closed_pulls: Int { return pulls.filter { $0.state == .closed }.count }
-    var average_reviews_per_pull: Int = 0
-    var comments_per_lines: Int { return changed_lines == 0 ? 0 : comments * 1000 / changed_lines }
-    var review_comments_per_lines: Int { return changed_lines == 0 ? 0 : review_comments * 1000 / changed_lines }
+    var average_reviews_per_pull: Float = 0
+    var comments_per_lines: Float { return changed_lines == 0 ? 0 : Float(comments * 1000) / Float(changed_lines) }
+    var review_comments_per_lines: Float { return changed_lines == 0 ? 0 : Float(review_comments * 1000) / Float(changed_lines) }
 
     init(user: String) {
         self.user = user
@@ -38,23 +38,24 @@ struct UserPullModel {
             "\(created_pulls)",
             "\(open_pulls)",
             "\(closed_pulls)",
-            "\(commits)",
-            "\(comments)",
-            "\(review_comments)",
+            "\(commits.commaString)",
+            "\(comments.commaString)",
+            "\(review_comments.commaString)",
             "\(average_duration_per_pull_string)",
-            "\(average_commits_per_pull)",
-            "\(average_comments_per_pull)",
-            "\(average_review_comments_per_pull)",
-            "\(changed_lines)",
-            "\(additions)",
-            "\(deletions)",
-            "\(comments_per_lines)",
-            "\(review_comments_per_lines)",
-            "\(average_reviews_per_pull)"
+            formatted(average_commits_per_pull).commaString,
+            formatted(average_comments_per_pull).commaString,
+            formatted(average_review_comments_per_pull).commaString,
+            "\(changed_lines.commaString)",
+            "\(additions.commaString)",
+            "\(deletions.commaString)",
+            formatted(comments_per_lines).commaString,
+            formatted(review_comments_per_lines).commaString,
+            formatted(average_reviews_per_pull).commaString
         ]
-        var result = ""
-        array.enumerated().forEach { (index, text) in result += textWithTab(text: text, length: UserPullModel.titleAndLengths[index].1) }
-        return result
+//        var result = ""
+//        array.enumerated().forEach { (index, text) in result += textWithTab(text: text, length: UserPullModel.titleAndLengths[index].1) }
+//        return result
+        return Output.textWithTab(array: array, titleAndLengths: UserPullModel.titleAndLengths)
     }
 
     static var titleAndLengths = [
@@ -78,7 +79,8 @@ struct UserPullModel {
     ]
 
     static var outputTitles: String {
-        let array = titleAndLengths
-        return array.reduce("") { $0 + textWithTab(text: $1.0, length: $1.1) }
+        return Output.outputTitles(array: titleAndLengths)
+//        let array = titleAndLengths
+//        return array.reduce("") { $0 + textWithTab(text: $1.0, length: $1.1) }
     }
 }

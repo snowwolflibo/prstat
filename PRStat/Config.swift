@@ -12,4 +12,7 @@ class Config {
     static func pullsUrl(repository: Repository, page: Int) -> String {
         return "https://api.github.com/repos/zillyinc/\(repository.rawValue)/pulls?state=all&sort=created&direction=desc&page=\(page)"
     }
+    static func reviewsUrl(repository: Repository, pullNumber: String, page: Int) -> String {
+        return "https://api.github.com/repos/zillyinc/\(repository.rawValue)/pulls/\(pullNumber)/reviews&page=\(page)"
+    }
 }
