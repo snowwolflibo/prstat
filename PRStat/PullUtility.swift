@@ -134,16 +134,16 @@ class PullUtility {
 
     // MARK: Fetchers - Comments
 
-    private static func pick(from array: [PullSummaryModel], page: Int, pageSize: Int) -> [PullSummaryModel] {
-        let start = pageSize * page
-        let end = min(array.count, pageSize * (page + 1))
-        var result: [PullSummaryModel] = []
-        print("pick pull from \(start) to \(end - 1), total: \(array.count)")
-        for i in start..<end {
-            result.append(array[i])
-        }
-        return result
-    }
+//    private static func pick(from array: [PullSummaryModel], page: Int, pageSize: Int) -> [PullSummaryModel] {
+//        let start = pageSize * page
+//        let end = min(array.count, pageSize * (page + 1))
+//        var result: [PullSummaryModel] = []
+//        print("pick pull from \(start) to \(end - 1), total: \(array.count)")
+//        for i in start..<end {
+//            result.append(array[i])
+//        }
+//        return result
+//    }
 
 //    private static func fetchCommentsToOthers(stat: Stat, allPulls: [PullSummaryModel], type: CommentType) -> Promise<Bool> {
 //        return Promise<Bool> { seal in
