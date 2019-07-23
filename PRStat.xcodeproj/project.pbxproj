@@ -29,6 +29,7 @@
 		E8DA9B1922E728170040EA3A /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8DA9B1822E728170040EA3A /* Config.swift */; };
 		E8DA9B1B22E73F5A0040EA3A /* Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8DA9B1A22E73F5A0040EA3A /* Extension.swift */; };
 		E8DA9B1D22E750400040EA3A /* Output.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8DA9B1C22E750400040EA3A /* Output.swift */; };
+		E8DA9B1F22E755860040EA3A /* ReviewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8DA9B1E22E755860040EA3A /* ReviewModel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -57,6 +58,7 @@
 		E8DA9B1822E728170040EA3A /* Config.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
 		E8DA9B1A22E73F5A0040EA3A /* Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extension.swift; sourceTree = "<group>"; };
 		E8DA9B1C22E750400040EA3A /* Output.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Output.swift; sourceTree = "<group>"; };
+		E8DA9B1E22E755860040EA3A /* ReviewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewModel.swift; sourceTree = "<group>"; };
 		FA432B7867FDB97C993784BE /* Pods-PRStat.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PRStat.release.xcconfig"; path = "Target Support Files/Pods-PRStat/Pods-PRStat.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -131,6 +133,7 @@
 				E8DA9B1222E614B50040EA3A /* UserLineAndCommentModel.swift */,
 				E8DA9B1422E615010040EA3A /* CommentModel.swift */,
 				E8DA9B1622E615120040EA3A /* CommitModel.swift */,
+				E8DA9B1E22E755860040EA3A /* ReviewModel.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -246,6 +249,7 @@
 				E86F8C9422E3140000F29B6D /* ApiRequestParameter.swift in Sources */,
 				E805482D22E5AF7B008E7E4B /* CacheUtility.swift in Sources */,
 				E8DA9B1D22E750400040EA3A /* Output.swift in Sources */,
+				E8DA9B1F22E755860040EA3A /* ReviewModel.swift in Sources */,
 				E86F8C9022E311AA00F29B6D /* ApiHelper.swift in Sources */,
 				E8DA9B0F22E614840040EA3A /* PullStat.swift in Sources */,
 				E86F8C9D22E44C3000F29B6D /* LogUtility.swift in Sources */,

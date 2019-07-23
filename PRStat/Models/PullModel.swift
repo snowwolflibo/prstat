@@ -21,9 +21,10 @@ struct PullSummaryModel: HandyJSON {
     }
 }
 
-struct PullModel: HandyJSON {
+class PullModel: HandyJSON {
     var number: Int = 0
     var url: String = ""
+    var html_url: String = ""
     private var user: UserModel?
     private var assignees: [UserModel]?
     var true_user: UserModel? {
@@ -48,22 +49,11 @@ struct PullModel: HandyJSON {
     var changed_lines: Int { return additions + deletions }
     var changed_files: Int = 0
     var comments: Int = 0
+    var reviews: Int = 0
     var review_comments: Int = 0
-//    var titleOutput: String { return "title:\(title)(\(url))\tuser: \(true_user?.login ?? "") \t\t creater: \(user?.login ?? "")" }
 
-//    var detailOutput: String {
-//        return "state:\(state)\t" +
-//        "created_at:\(created_at)\t" +
-//        "merged:\(merged)\t" +
-//        "duration:\(durationString)\t" +
-//        "commits:\(commits.commaString)\t" +
-//        "comments:\(comments.commaString)\t" +
-//        "review_comments:\(review_comments.commaString)\t" +
-//        "additions:\(additions.commaString)\t" +
-//        "deletions:\(deletions.commaString)\t" +
-//        "changed_lines:\(changed_lines.commaString)\t" +
-//        "changed_files:\(changed_files.commaString)\t"
-//    }
+    required init() { }
+
     var outputValues: String {
         let array = [
             "\(number)",
@@ -75,15 +65,13 @@ struct PullModel: HandyJSON {
             "\(commits.commaString)",
             "\(comments.commaString)",
             "\(review_comments.commaString)",
+            "\(reviews.commaString)",
             "\(additions.commaString)",
             "\(deletions.commaString)",
             "\(changed_lines.commaString)",
             "\(changed_files.commaString)",
             "\(title)",
         ]
-//        var result = ""
-//        array.enumerated().forEach { (index, text) in result += textWithTab(text: text, length: PullModel.titleAndLengths[index].1) }
-//        return result
         return Output.textWithTab(array: array, titleAndLengths: PullModel.titleAndLengths)
     }
 
@@ -97,6 +85,7 @@ struct PullModel: HandyJSON {
         ("commits",10),
         ("comments",10),
         ("rev_comments",15),
+        ("reviews",15),
         ("lines_add",15),
         ("lines_del",15),
         ("lines",10),
@@ -106,8 +95,6 @@ struct PullModel: HandyJSON {
 
     static var outputTitles: String {
         return Output.outputTitles(array: titleAndLengths)
-//        let array = titleAndLengths
-//        return array.reduce("") { $0 + textWithTab(text: $1.0, length: $1.1) }
     }
 
     private func date(from string: String) -> Date {

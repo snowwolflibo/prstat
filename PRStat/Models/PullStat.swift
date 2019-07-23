@@ -89,7 +89,7 @@ class PullStat {
         userAndPulls.forEach { user, pulls in
             result = addLine(original: result, newLine: "\(user) \(pulls.count) links:")
             pulls.forEach({ pull in
-                result = addLine(original: result, newLine: "\(pull.title) \(pull.url)")
+                result = addLine(original: result, newLine: "api:\(pull.url)\t html:\(pull.html_url)\t\(pull.title)")
             })
             result = addLine(original: result, newLine: "")
         }

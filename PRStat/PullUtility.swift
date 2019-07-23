@@ -42,14 +42,17 @@ class PullUtility {
             print("end fetch all pulls \(allPulls.count)==============")
             _  = fetchAllPullDetails(pullStatType: .created, stat: stat, dateRanges: dateRanges, allPulls: allPulls).done({ pullStats in
                 _  = fetchAllPullDetails(pullStatType: .merged, stat: stat, dateRanges: dateRanges, allPulls: allPulls).done({ pullStats in
-                    _  = fetchCommits(stat: stat, allPulls: allPulls).done({ _ in
-                        _  = fetchCommentsToOthersOfAllPulls(stat: stat, allPulls: allPulls, type: .comment).done { _ in
-                            _  = fetchCommentsToOthersOfAllPulls(stat: stat, allPulls: allPulls, type: .reviewComment).done({ _ in
-                                pullStats.forEach({ pullStat in
-                                    pullStat.writeToFile(repository: repository)
+                    let allPullsWithDetail = pullStats.compactMap { $0.createdPulls }.flatMap { $0 }
+                    _ = fetchReviewsOfAllPulls(repository: repository, stat: stat, allPulls: allPullsWithDetail).done({ _ in
+                        _  = fetchCommits(stat: stat, allPulls: allPulls).done({ _ in
+                            _  = fetchCommentsToOthersOfAllPulls(stat: stat, allPulls: allPulls, type: .comment).done { _ in
+                                _  = fetchCommentsToOthersOfAllPulls(stat: stat, allPulls: allPulls, type: .reviewComment).done({ _ in
+                                    pullStats.forEach({ pullStat in
+                                        pullStat.writeToFile(repository: repository)
+                                    })
                                 })
-                            })
-                        }
+                            }
+                        })
                     })
                 })
             })
@@ -156,13 +159,13 @@ class PullUtility {
         return Promise<Bool> { seal in
             var fetchMultiplePromise: [Promise<[CommentModel]>] = []
             allPulls.forEach({ model in
-                let promise = fetchCommentsToOthersOfOnePull(url: model.commentsUrl(type: type), allPagedComments: AllPagedModels<CommentModel>())
+                let promise = fetchCommentsToOthersOfOnePull(url: model.commentsUrl(type: type), allPagedModels: AllPagedModels<CommentModel>())
                 fetchMultiplePromise.append(promise)
             })
             when(fulfilled: fetchMultiplePromise).done({ array in
-                let allComments = array.flatMap { $0 }
-                print("fetch comments to others - \(type.rawValue) completed. allComments: (\(allComments.count))")
-                allComments.forEach({ comment in
+                let allModels = array.flatMap { $0 }
+                print("fetch comments to others - \(type.rawValue) completed. allModels: (\(allModels.count))")
+                allModels.forEach({ comment in
                     let user = comment.user.login
                     modelsAddedLock.lock()
                     if let commit_id = comment.original_commit_id {
@@ -188,29 +191,83 @@ class PullUtility {
         }
     }
 
-    private static func fetchCommentsToOthersOfOnePull(page: Int = 1, url: String, allPagedComments: AllPagedModels<CommentModel>) -> Promise<[CommentModel]>  {
+    private static func fetchCommentsToOthersOfOnePull(page: Int = 1, url: String, allPagedModels: AllPagedModels<CommentModel>) -> Promise<[CommentModel]>  {
         return Promise<[CommentModel]> { seal in
             let urlWithPage = url + "?page=\(page)"
             _  = ApiRequest<[Any]>.getResponsePromise(forceFetchFromServer: true, url: urlWithPage).done { array in
                 let models = [CommentModel].deserialize(from: array)!.compactMap { $0 }
                 allPagedModelsLock.lock()
-                allPagedComments.models += models
+                allPagedModels.models += models
                 allPagedModelsLock.unlock()
                 let block = { (action: String) in
                     print("Request:\(url); result count:\(models.count); \(action)")
                 }
                 if models.count < Config.pageSize {
                     block("completed")
-                    seal.fulfill(allPagedComments.models)
+                    seal.fulfill(allPagedModels.models)
                 } else {
                     block("go next page")
-                    _  = fetchCommentsToOthersOfOnePull(page: page + 1, url: url, allPagedComments: allPagedComments).done({ models in
+                    _  = fetchCommentsToOthersOfOnePull(page: page + 1, url: url, allPagedModels: allPagedModels).done({ models in
                         seal.fulfill(models)
                     })
                 }
             }
         }
     }
+
+    // MARK: Fetcher - Reviews
+    private static func fetchReviewsOfAllPulls(repository: Repository, stat: Stat, allPulls: [PullModel]) -> Promise<Bool> {
+        print("fetch reviews of all pulls (\(allPulls.count))")
+        return Promise<Bool> { seal in
+            var fetchMultiplePromise: [Promise<[ReviewModel]>] = []
+            allPulls.forEach({ model in
+                let promise = fetchReviewsOfOnePull(stat: stat, pull: model, url: Config.reviewsUrl(repository: repository, pullNumber: model.number), allPagedModels: AllPagedModels<ReviewModel>())
+                fetchMultiplePromise.append(promise)
+            })
+            when(fulfilled: fetchMultiplePromise).done({ array in
+                seal.fulfill(true)
+            }).catch({ error in
+                print(error)
+                seal.reject(error)
+            })
+        }
+    }
+
+    private static func fetchReviewsOfOnePull(stat: Stat, pull: PullModel, page: Int = 1, url: String, allPagedModels: AllPagedModels<ReviewModel>) -> Promise<[ReviewModel]>  {
+        return Promise<[ReviewModel]> { seal in
+            let urlWithPage = url + "?page=\(page)"
+            _  = ApiRequest<[Any]>.getResponsePromise(forceFetchFromServer: true, url: urlWithPage).done { array in
+                let models = [ReviewModel].deserialize(from: array)!.compactMap { $0 }
+                if models.count > 0 {
+                    allPagedModelsLock.lock()
+                    allPagedModels.models += models
+                    print("add reviews to \(pull.true_user?.login ?? "")'s pull \(pull.number)  total reviews = \(allPagedModels.models.count) added reviews:\(models.count) \(pull.html_url) \(urlWithPage)")
+                    allPagedModelsLock.unlock()
+                }
+                let block = { (action: String) in
+                    print("Request:\(url); result count:\(models.count); \(action)")
+                }
+                if models.count < Config.pageSize {
+                    block("completed")
+                    pull.reviews = allPagedModels.models.count
+                    stat.pullStats.forEach({ pullStat in
+                        let pullsOfUser = pullStat.userPulls[.merged]?.values.flatMap({ $0.pulls })
+                        pullsOfUser?.filter({ $0.number == pull.number }).forEach({ pullOfUser in
+                            pullOfUser.reviews = pull.reviews
+                        })
+                    })
+
+                    seal.fulfill(allPagedModels.models)
+                } else {
+                    block("go next page")
+                    _  = fetchReviewsOfOnePull(stat: stat, pull: pull, page: page + 1, url: url, allPagedModels: allPagedModels).done({ result in
+                        seal.fulfill(result)
+                    })
+                }
+            }
+        }
+    }
+
 
     // MARK: Fetcher - Commits
     private static func fetchCommits(stat: Stat, allPulls: [PullSummaryModel]) -> Promise<Bool> {
