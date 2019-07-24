@@ -10,7 +10,6 @@ import UIKit
 import CommonCrypto
 
 class CacheUtility: NSObject  {
-
     static var repository: Repository!
 
     static func filePath(url: String) -> String {

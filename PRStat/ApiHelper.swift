@@ -9,22 +9,9 @@
 import UIKit
 import PromiseKit
 
-class FileData {
-    var data: Data!
-    var name: String!
-    var fileName: String!
-    var mimeType: String!
-}
-
 class ApiRequest<ModelType> {
 
     // MARK: - -Promise
-    public static func post(url: String, body: Parameters? = nil) -> Promise<ModelType>  {
-        return getResponsePromiseBase(url: url, method: .post, body: body, querys: nil, requestAlamofireAction: { (requestParameter) -> DataRequest in
-            return Alamofire.request(requestParameter.getURL(), method: .post, parameters: body, encoding: JSONEncoding.default, headers: requestParameter.headers)
-        })
-    }
-
     public static func getResponsePromise(forceFetchFromServer: Bool = false, url: String, method: HTTPMethod = .get, body: Parameters? = nil, querys: Parameters? = nil) -> Promise<ModelType> {
         if (!forceFetchFromServer || Config.alwaysUseCache), let data = CacheUtility.getData(url: url) {
             return Promise<ModelType> { seal in

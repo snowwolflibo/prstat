@@ -8,21 +8,19 @@
 
 import UIKit
 
-func formatted(_ value: Float) -> Float {
-    return Float(String(format: "%.2f", value))!
-}
-
 extension Int {
     var commaString: String {
-//        return "\(self)".commaString
         return NSNumber(value: self).commaString
     }
 }
 
 extension Float {
     var commaString: String {
-//        return "\(self)".commaString
-        return NSNumber(value: self).commaString
+        return NSNumber(value: self.standardRounded).commaString
+    }
+
+    var standardRounded: Float {
+        return Float(String(format: "%.2f", self))!
     }
 }
 

@@ -33,11 +33,8 @@ struct UserLineAndCommentModel {
             "\(deletions.commaString)",
             "\(lines.commaString)",
             "\(comment_count.commaString)",
-            formatted(review_comments_per_lines).commaString
+            review_comments_per_lines.commaString
         ]
-//        var result = ""
-//        array.enumerated().forEach { (index, text) in result += textWithTab(text: text, length: UserLineAndCommentModel.titleAndLengths[index].1) }
-//        return result
         return Output.textWithTab(array: array, titleAndLengths: UserLineAndCommentModel.titleAndLengths)
     }
 
@@ -55,7 +52,5 @@ struct UserLineAndCommentModel {
 
     static var outputTitles: String {
         return Output.outputTitles(array: titleAndLengths)
-//        let array = titleAndLengths
-//        return array.reduce("") { $0 + textWithTab(text: $1.0, length: $1.1) }
     }
 }

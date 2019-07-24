@@ -15,7 +15,7 @@ struct UserPullModel {
     var review_comments: Int { return pulls.reduce(0) { $0 + $1.review_comments } }
     var reviews: Int { return pulls.reduce(0) { $0 + $1.reviews } }
     var average_duration_per_pull: Float { return created_pulls == 0 ? 0 : Float(pulls.reduce(0) { $0 + $1.duration }) / Float(created_pulls) }
-    var average_duration_per_pull_string: String { return "\(formatted(average_duration_per_pull)) days" }
+    var average_duration_per_pull_string: String { return "\(average_duration_per_pull.standardRounded) days" }
     var average_commits_per_pull: Float { return created_pulls == 0 ? 0 : Float(commits) / Float(created_pulls) }
     var average_comments_per_pull: Float { return created_pulls == 0 ? 0 : Float(comments) / Float(created_pulls) }
     var average_review_comments_per_pull: Float { return created_pulls == 0 ? 0 : Float(review_comments) / Float(created_pulls) }
@@ -44,15 +44,15 @@ struct UserPullModel {
             "\(review_comments.commaString)",
             "\(reviews.commaString)",
             "\(average_duration_per_pull_string)",
-            formatted(average_commits_per_pull).commaString,
-            formatted(average_comments_per_pull).commaString,
-            formatted(average_review_comments_per_pull).commaString,
-            formatted(average_reviews_per_pull).commaString,
+            average_commits_per_pull.commaString,
+            average_comments_per_pull.commaString,
+            average_review_comments_per_pull.commaString,
+            average_reviews_per_pull.commaString,
             "\(changed_lines.commaString)",
             "\(additions.commaString)",
             "\(deletions.commaString)",
-            formatted(comments_per_lines).commaString,
-            formatted(review_comments_per_lines).commaString,
+            comments_per_lines.commaString,
+            review_comments_per_lines.commaString,
         ]
         return Output.textWithTab(array: array, titleAndLengths: UserPullModel.titleAndLengths)
     }
@@ -80,7 +80,5 @@ struct UserPullModel {
 
     static var outputTitles: String {
         return Output.outputTitles(array: titleAndLengths)
-//        let array = titleAndLengths
-//        return array.reduce("") { $0 + textWithTab(text: $1.0, length: $1.1) }
     }
 }

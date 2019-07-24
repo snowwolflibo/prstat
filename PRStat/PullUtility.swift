@@ -133,27 +133,6 @@ class PullUtility {
     }
 
     // MARK: Fetchers - Comments
-
-//    private static func pick(from array: [PullSummaryModel], page: Int, pageSize: Int) -> [PullSummaryModel] {
-//        let start = pageSize * page
-//        let end = min(array.count, pageSize * (page + 1))
-//        var result: [PullSummaryModel] = []
-//        print("pick pull from \(start) to \(end - 1), total: \(array.count)")
-//        for i in start..<end {
-//            result.append(array[i])
-//        }
-//        return result
-//    }
-
-//    private static func fetchCommentsToOthers(stat: Stat, allPulls: [PullSummaryModel], type: CommentType) -> Promise<Bool> {
-//        return Promise<Bool> { seal in
-//            print("fetch comments to others - \(type.rawValue) (\(allPulls.count))")
-//            _  = fetchCommentsToOthersOfAllPulls(stat: stat, type: type, allPulls: allPulls, page: 0).done({ result in
-//                seal.fulfill(result)
-//            })
-//        }
-//    }
-
     private static func fetchCommentsToOthersOfAllPulls(stat: Stat, allPulls: [PullSummaryModel], type: CommentType) -> Promise<Bool> {
         print("fetch comments to others of all pulls - \(type.rawValue) (\(allPulls.count))")
         return Promise<Bool> { seal in
@@ -334,9 +313,6 @@ class PullUtility {
                 if models.count < Config.pageSize {
                     block("completed")
                     fetchCommitsBySHA(commits: allPagedCommits.models).done({ _ in
-//                        fetchCommitReviewComments(commits: allPagedCommits.commits).done({ _ in
-//                            seal.fulfill(allPagedCommits.commits)
-//                        })
                         seal.fulfill(allPagedCommits.models)
                     }).catch({ error in
                         seal.reject(error)
@@ -393,43 +369,5 @@ class PullUtility {
                 })
         }
     }
-
-//    // MARK: Fetcher - Commits - Review Comments
-//    private static func fetchCommitReviewComments(commits: [CommitModel]) -> Promise<Bool> {
-//        print("begin fetchCommitReviewComments")
-//        return Promise<Bool> { seal in
-//            var fetchMultiplePromise: [Promise<Bool>] = []
-//            commits.forEach({ model in
-//                let promise = fetchCommitReviewComment(commit: model)
-//                fetchMultiplePromise.append(promise)
-//            })
-//            when(fulfilled: fetchMultiplePromise).done { _ in
-//                seal.fulfill(true)
-//                }.catch({ error in
-//                    print(error)
-//                    seal.fulfill(true)
-//                })
-//        }
-//    }
-//
-//    private static func fetchCommitReviewComment(commit: CommitModel) -> Promise<Bool>  {
-//        return Promise<Bool> { seal in
-//            let url = commit.comments_url!
-//            ApiRequest<[Any]>.getResponsePromise(url: url).done { data in
-//                if let models = [CommentModel].deserialize(from: data) {
-//                    allPagedModelsLock.lock()
-//                    commit.commit.comment_count = models.compactMap { $0 }.count
-//                    allPagedModelsLock.unlock()
-//                    print("Request:\(url); commit.commit.comment_count \(commit.commit.comment_count)")
-//                } else {
-//                    print("Request:\(url); return nil")
-//                }
-//                seal.fulfill(true)
-//                }.catch({ error in
-//                    print(error)
-//                    seal.fulfill(true)
-//                })
-//        }
-//    }
 }
 
