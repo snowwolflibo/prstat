@@ -55,7 +55,7 @@ class PullStat {
             result = self.addLine(original: result, newLine: "\r\n============= user pulls - \(pullStatType.rawValue) (\(sortedUserPulls.reduce(0) { $0 + $1.pulls.count })) ==============\r\n")
             result = self.addLine(original: result, newLine: UserPullModel.outputTitles)
             sortedUserPulls.forEach {
-                result = self.addLine(original: result, newLine: $0.outputValues)
+                result = self.addLine(original: result, newLine: $0.outputValues(pullStatType: pullStatType))
             }
         }
         userPullBlock(.created)
@@ -84,12 +84,15 @@ class PullStat {
             result = addLine(original: result, newLine: $0.outputValues)
         }
         // User Pull Lins
-        let userAndPulls = self.userAndPulls
+        let users = self.userAndPulls.keys.sorted { $0.compare($1) == .orderedAscending }
         result = addLine(original: result, newLine: "\r\n============= new pull links (\(sortedPulls.count)) ==============\r\n")
-        userAndPulls.forEach { user, pulls in
+        let userPullsTitleAndLengths: [(String,Int)] = [("url", 65), ("html", 65), ("title", 100)]
+        users.forEach { user in
+            let pulls = userAndPulls[user]!
             result = addLine(original: result, newLine: "\(user) \(pulls.count) links:")
             pulls.forEach({ pull in
-                result = addLine(original: result, newLine: "api:\(pull.url)\t html:\(pull.html_url)\t\(pull.title)")
+                let outputValues = Output.textWithTab(array: [pull.url, pull.html_url, pull.title], titleAndLengths: userPullsTitleAndLengths)
+                result = addLine(original: result, newLine: outputValues)
             })
             result = addLine(original: result, newLine: "")
         }

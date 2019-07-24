@@ -33,11 +33,11 @@ struct UserPullModel {
         self.user = user
     }
 
-    var outputValues: String {
+    func outputValues(pullStatType: PullStatType) -> String {
         let array = [
             "\(user)",
             "\(created_pulls)",
-            "\(open_pulls)",
+            pullStatType == .created ? "\(open_pulls)" : "-",
             "\(closed_pulls)",
             "\(commits.commaString)",
             "\(comments.commaString)",
