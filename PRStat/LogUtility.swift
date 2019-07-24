@@ -9,6 +9,8 @@
 class LogUtility {
 
     static func log(_ text: String) {
-//        print(text)
+        if Config.logForApi {
+            print(text)
+        }
     }
 }

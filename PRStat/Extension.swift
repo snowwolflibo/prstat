@@ -31,3 +31,15 @@ extension NSNumber {
         return format.string(from: self)!
     }
 }
+
+extension String {
+    var toDate: Date {
+        var dateString = replacingOccurrences(of: "T", with: " ")
+        dateString = dateString.replacingOccurrences(of: "Z", with: "")
+        let formatter = DateFormatter()
+        formatter.locale = Locale.init(identifier: "zh_CN")
+        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        let date = formatter.date(from: dateString)
+        return date!
+    }
+}

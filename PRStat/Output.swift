@@ -10,14 +10,14 @@ import UIKit
 
 class Output: NSObject {
     
-    static private func textWithTab(text: String, length: Int, isLast: Bool) -> String {
+    static private func textWithTab(text: String, length: Int, isLast: Bool, withSeparator: Bool = true) -> String {
         let spaceNumber = max(0, length - 1 - text.count)
-        return " " + text + String(repeating: " ", count: spaceNumber) + (isLast ? "" : "|")
+        return " " + text + String(repeating: " ", count: spaceNumber) + ((isLast || !withSeparator) ? "" : "|")
     }
 
-    static func textWithTab(array: [String], titleAndLengths: [(String,Int)]) -> String {
+    static func textWithTab(array: [String], titleAndLengths: [(String,Int)], withSeparator: Bool = true) -> String {
         var result = ""
-        array.enumerated().forEach { (index, text) in result += textWithTab(text: text, length: titleAndLengths[index].1, isLast: index == array.count - 1) }
+        array.enumerated().forEach { (index, text) in result += textWithTab(text: text, length: titleAndLengths[index].1, isLast: index == array.count - 1, withSeparator: withSeparator) }
         return result
     }
 

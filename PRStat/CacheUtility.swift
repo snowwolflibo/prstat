@@ -29,5 +29,4 @@ class CacheUtility: NSObject  {
         let data = try? JSONSerialization.data(withJSONObject: object, options: []) as NSData
         data?.write(toFile: path, atomically: true)
     }
-
 }

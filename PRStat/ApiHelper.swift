@@ -10,13 +10,10 @@ import UIKit
 import PromiseKit
 
 class ApiRequest<ModelType> {
-
     // MARK: - -Promise
     public static func getResponsePromise(forceFetchFromServer: Bool = false, url: String, method: HTTPMethod = .get, body: Parameters? = nil, querys: Parameters? = nil) -> Promise<ModelType> {
         if (!forceFetchFromServer || Config.alwaysUseCache), let data = CacheUtility.getData(url: url) {
-            return Promise<ModelType> { seal in
-                seal.fulfill(data as! ModelType)
-            }
+            return Promise<ModelType> { seal in seal.fulfill(data as! ModelType) }
         } else {
             return getResponsePromiseBase(url: url, method: method, body: body, querys: querys, requestAlamofireAction: { (requestParameter) -> DataRequest in
                 return Alamofire.request(requestParameter.getURL(), method: method, parameters: requestParameter.body, encoding: URLEncoding.default, headers: requestParameter.headers)
@@ -39,17 +36,9 @@ class ApiRequest<ModelType> {
     static func getResponsePromiseBase(url: String, method: HTTPMethod, body: Parameters?, querys: Parameters?, requestAlamofireAction: @escaping (_ requestParameter:  ApiRequestParameter) -> DataRequest) -> Promise<ModelType> {
         let requestParameter = getRequestParameter(url: url, body: body, querys: querys)
         let dataRequest = requestAlamofireAction(requestParameter)
-        let promise = firstly {
-            dataRequest.responseJSON()
-            }.map(on: nil) { data in
-                return resovleJSONToResponse(url: url, json: data.json)
-        }
-        _  = dataRequest.responseString().done(on: nil, { data in
-            LogUtility.log("【Api数据】responseString:\(data.string)")
-        })
-        promise.catch { (error) in
-            printError(error: error, dataRequest: dataRequest)
-        }
+        let promise = firstly { dataRequest.responseJSON() }.map(on: nil) { data in return resovleJSONToResponse(url: url, json: data.json) }
+        _  = dataRequest.responseString().done(on: nil, { data in LogUtility.log("【Api数据】responseString:\(data.string)") })
+        promise.catch { error in printError(error: error, dataRequest: dataRequest) }
         return promise
     }
 
@@ -61,8 +50,6 @@ class ApiRequest<ModelType> {
     }
 
     private static func printError(error: Error?, dataRequest: DataRequest?) {
-        if let _error = error {
-            LogUtility.log("promise.catch:\(_error)")
-        }
+        if let _error = error { LogUtility.log("promise.catch:\(_error)") }
     }
 }

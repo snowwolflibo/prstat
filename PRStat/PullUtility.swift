@@ -47,9 +47,7 @@ class PullUtility {
                         _  = fetchCommits(stat: stat, allPulls: allPulls).done({ _ in
                             _  = fetchCommentsToOthersOfAllPulls(stat: stat, allPulls: allPulls, type: .comment).done { _ in
                                 _  = fetchCommentsToOthersOfAllPulls(stat: stat, allPulls: allPulls, type: .reviewComment).done({ _ in
-                                    pullStats.forEach({ pullStat in
-                                        pullStat.writeToFile(repository: repository)
-                                    })
+                                    pullStats.forEach({ pullStat in pullStat.writeToFile(repository: repository) })
                                 })
                             }
                         })
@@ -65,10 +63,8 @@ class PullUtility {
             let promise = Promise<PullStat> { seal in
                 let modelsInThisDateRange = allPulls.filter {
                     switch pullStatType {
-                    case .created:
-                        return $0.created_at.contains(dateRange.displayText)
-                    case .merged:
-                        return ($0.merged_at?.contains(dateRange.displayText) ?? false)
+                    case .created: return $0.created_at.contains(dateRange.displayText)
+                    case .merged: return ($0.merged_at?.contains(dateRange.displayText) ?? false)
                     }
                 }
                 var fetchMultiplePromise: [Promise<[String:Any]>] = []
@@ -81,12 +77,8 @@ class PullUtility {
                 when(fulfilled: fetchMultiplePromise).done({ array in
                     print("fetch all pulls in \(dateRange.displayText) completed, array = \(array.count)")
                     let detailModels = [PullModel].deserialize(from: array)!.compactMap { $0 }
-                    _  = fillUserPullsIntoStat(pullStatType: pullStatType, stat: stat, dateRange: dateRange, allPullsWithDetail: detailModels).done({ pullStat in
-                        seal.fulfill(pullStat)
-                    })
-                }).catch({ error in
-                    print(error)
-                })
+                    _  = fillUserPullsIntoStat(pullStatType: pullStatType, stat: stat, dateRange: dateRange, allPullsWithDetail: detailModels).done({ pullStat in seal.fulfill(pullStat) })
+                }).catch({ error in print(error) })
             }
             promises.append(promise)
         }
@@ -235,7 +227,6 @@ class PullUtility {
                             pullOfUser.reviews = pull.reviews
                         })
                     })
-
                     seal.fulfill(allPagedModels.models)
                 } else {
                     block("go next page")
@@ -246,7 +237,6 @@ class PullUtility {
             }
         }
     }
-
 
     // MARK: Fetcher - Commits
     private static func fetchCommits(stat: Stat, allPulls: [PullSummaryModel]) -> Promise<Bool> {

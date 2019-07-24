@@ -36,8 +36,8 @@ class PullModel: HandyJSON {
     var created_at: String = ""
     var merged_at: String?
     var duration: Int {
-        let createdDate = date(from: created_at)
-        let mergedDate = merged_at == nil ? Date() : date(from: merged_at!)
+        let createdDate = created_at.toDate
+        let mergedDate = merged_at?.toDate ?? Date()
         let days = mergedDate.timeIntervalSince(createdDate) / (3600 * 24)
         return Int(days)
     }
@@ -95,16 +95,6 @@ class PullModel: HandyJSON {
 
     static var outputTitles: String {
         return Output.outputTitles(array: titleAndLengths)
-    }
-
-    private func date(from string: String) -> Date {
-        var dateString = string.replacingOccurrences(of: "T", with: " ")
-        dateString = dateString.replacingOccurrences(of: "Z", with: "")
-        let formatter = DateFormatter()
-        formatter.locale = Locale.init(identifier: "zh_CN")
-        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
-        let date = formatter.date(from: dateString)
-        return date!
     }
 }
 

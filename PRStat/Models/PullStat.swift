@@ -49,9 +49,7 @@ class PullStat {
         // User Pulls
         let userPullBlock = { (pullStatType: PullStatType) in
             let userPullsOfThisType = self.userPulls[pullStatType]!
-            let sortedUserPulls = userPullsOfThisType.values.sorted { userPull1, userPull2 -> Bool in
-                return userPull1.user.compare(userPull2.user) == .orderedAscending
-            }
+            let sortedUserPulls = userPullsOfThisType.values.sorted { $0.user.compare($1.user) == .orderedAscending }
             result = self.addLine(original: result, newLine: "\r\n============= user pulls - \(pullStatType.rawValue) (\(sortedUserPulls.reduce(0) { $0 + $1.pulls.count })) ==============\r\n")
             result = self.addLine(original: result, newLine: UserPullModel.outputTitles)
             sortedUserPulls.forEach {
@@ -61,9 +59,7 @@ class PullStat {
         userPullBlock(.created)
         userPullBlock(.merged)
         // User Lines and Comments
-        let sortedUserLinesAndComments = userLineAndComments.values.sorted { model1, model2 -> Bool in
-            return model1.user.compare(model2.user) == .orderedAscending
-        }
+        let sortedUserLinesAndComments = userLineAndComments.values.sorted { $0.user.compare($1.user) == .orderedAscending }
         result = addLine(original: result, newLine: "\r\n============= user lines and comments ==============\r\n")
         result = addLine(original: result, newLine: UserLineAndCommentModel.outputTitles)
         sortedUserLinesAndComments.forEach {
@@ -86,12 +82,12 @@ class PullStat {
         // User Pull Lins
         let users = self.userAndPulls.keys.sorted { $0.compare($1) == .orderedAscending }
         result = addLine(original: result, newLine: "\r\n============= new pull links (\(sortedPulls.count)) ==============\r\n")
-        let userPullsTitleAndLengths: [(String,Int)] = [("url", 65), ("html", 65), ("title", 100)]
+        let userPullsTitleAndLengths: [(String,Int)] = [("url", 60), ("html", 50), ("title", 100)]
         users.forEach { user in
             let pulls = userAndPulls[user]!
             result = addLine(original: result, newLine: "\(user) \(pulls.count) links:")
             pulls.forEach({ pull in
-                let outputValues = Output.textWithTab(array: [pull.url, pull.html_url, pull.title], titleAndLengths: userPullsTitleAndLengths)
+                let outputValues = Output.textWithTab(array: [pull.url, pull.html_url, pull.title], titleAndLengths: userPullsTitleAndLengths, withSeparator: false)
                 result = addLine(original: result, newLine: outputValues)
             })
             result = addLine(original: result, newLine: "")

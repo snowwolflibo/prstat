@@ -9,6 +9,7 @@
 class Config {
     static let alwaysUseCache = true
     static let pageSize: Int = 30
+    static let logForApi: Bool = false
     static func pullsUrl(repository: Repository, page: Int) -> String {
         return "https://api.github.com/repos/zillyinc/\(repository.rawValue)/pulls?state=all&sort=created&direction=desc&page=\(page)"
     }
