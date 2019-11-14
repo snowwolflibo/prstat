@@ -1,0 +1,5 @@
+language: objective-c
+script: 
+  - xctool -project PRStat.xcodeproj -scheme PRStat build test -sdk iphonesimulator GCC_INSTRUMENT_PROGRAM_FLOW_ARCS=YES GCC_GENERATE_TEST_COVERAGE_FILES=YES
+after_success:
+  - bash <(curl -s https://codecov.io/bash) -t :81b136b0-5308-4f37-872f-dc5cee072e1d
