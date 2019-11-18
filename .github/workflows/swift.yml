@@ -9,13 +9,13 @@ jobs:
 
     steps:
     - uses: actions/checkout@v1
+      with:
+        repo-token: ${{ secrets.Secret }}
     - name: Build
       run: |
         pod install
         swift build -v
     - name: Merge
-      with:
-        repo-token: ${{ secrets.Secret }}
       run: |
         git checkout origin/test
         git merge -m 'auto-merge' origin/master
