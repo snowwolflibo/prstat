@@ -13,5 +13,9 @@ jobs:
       run: |
         pod install
         swift build -v
+    - name: Merge
+      run: |
+        git checkout test
+        git merge master
     - name: Run tests
       run: swift test -v
