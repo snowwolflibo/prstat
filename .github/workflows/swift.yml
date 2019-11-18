@@ -18,6 +18,10 @@ jobs:
         git checkout origin/test
         git merge origin/master
         git push origin HEAD:test
+
+
+
+        
     - name: Run tests
       run: swift test -v
    
