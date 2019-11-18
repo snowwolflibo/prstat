@@ -20,6 +20,9 @@
 		E86F8C9922E4054100F29B6D /* PullModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E86F8C9822E4054100F29B6D /* PullModel.swift */; };
 		E86F8C9B22E4403300F29B6D /* FileUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = E86F8C9A22E4403300F29B6D /* FileUtility.swift */; };
 		E86F8C9D22E44C3000F29B6D /* LogUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = E86F8C9C22E44C3000F29B6D /* LogUtility.swift */; };
+		E88815F723827E0B0093FEA8 /* LinuxMain.swift in Sources */ = {isa = PBXBuildFile; fileRef = E88815F323827E0B0093FEA8 /* LinuxMain.swift */; };
+		E88815F823827E0B0093FEA8 /* XCTestManifests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E88815F523827E0B0093FEA8 /* XCTestManifests.swift */; };
+		E88815F923827E0B0093FEA8 /* prstatTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E88815F623827E0B0093FEA8 /* prstatTests.swift */; };
 		E8DA9B0D22E612C20040EA3A /* CommonModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8DA9B0C22E612C20040EA3A /* CommonModel.swift */; };
 		E8DA9B0F22E614840040EA3A /* PullStat.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8DA9B0E22E614840040EA3A /* PullStat.swift */; };
 		E8DA9B1122E614A60040EA3A /* UserPullModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8DA9B1022E614A60040EA3A /* UserPullModel.swift */; };
@@ -49,6 +52,9 @@
 		E86F8C9822E4054100F29B6D /* PullModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PullModel.swift; sourceTree = "<group>"; };
 		E86F8C9A22E4403300F29B6D /* FileUtility.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileUtility.swift; sourceTree = "<group>"; };
 		E86F8C9C22E44C3000F29B6D /* LogUtility.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogUtility.swift; sourceTree = "<group>"; };
+		E88815F323827E0B0093FEA8 /* LinuxMain.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LinuxMain.swift; sourceTree = "<group>"; };
+		E88815F523827E0B0093FEA8 /* XCTestManifests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = XCTestManifests.swift; sourceTree = "<group>"; };
+		E88815F623827E0B0093FEA8 /* prstatTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = prstatTests.swift; sourceTree = "<group>"; };
 		E8DA9B0C22E612C20040EA3A /* CommonModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommonModel.swift; sourceTree = "<group>"; };
 		E8DA9B0E22E614840040EA3A /* PullStat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PullStat.swift; sourceTree = "<group>"; };
 		E8DA9B1022E614A60040EA3A /* UserPullModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserPullModel.swift; sourceTree = "<group>"; };
@@ -85,6 +91,7 @@
 		E86F8C6F22E3100B00F29B6D = {
 			isa = PBXGroup;
 			children = (
+				E88815F223827E0B0093FEA8 /* Tests */,
 				E86F8C7A22E3100B00F29B6D /* PRStat */,
 				E86F8C7922E3100B00F29B6D /* Products */,
 				F6FB350E63821EF06C431266 /* Pods */,
@@ -136,6 +143,24 @@
 				E8DA9B1E22E755860040EA3A /* ReviewModel.swift */,
 			);
 			path = Models;
+			sourceTree = "<group>";
+		};
+		E88815F223827E0B0093FEA8 /* Tests */ = {
+			isa = PBXGroup;
+			children = (
+				E88815F323827E0B0093FEA8 /* LinuxMain.swift */,
+				E88815F423827E0B0093FEA8 /* prstatTests */,
+			);
+			path = Tests;
+			sourceTree = "<group>";
+		};
+		E88815F423827E0B0093FEA8 /* prstatTests */ = {
+			isa = PBXGroup;
+			children = (
+				E88815F523827E0B0093FEA8 /* XCTestManifests.swift */,
+				E88815F623827E0B0093FEA8 /* prstatTests.swift */,
+			);
+			path = prstatTests;
 			sourceTree = "<group>";
 		};
 		F6FB350E63821EF06C431266 /* Pods */ = {
@@ -258,11 +283,14 @@
 				E8DA9B1722E615120040EA3A /* CommitModel.swift in Sources */,
 				E8DA9B1B22E73F5A0040EA3A /* Extension.swift in Sources */,
 				E8DA9B0D22E612C20040EA3A /* CommonModel.swift in Sources */,
+				E88815F823827E0B0093FEA8 /* XCTestManifests.swift in Sources */,
 				E86F8C9922E4054100F29B6D /* PullModel.swift in Sources */,
+				E88815F723827E0B0093FEA8 /* LinuxMain.swift in Sources */,
 				E8DA9B1522E615010040EA3A /* CommentModel.swift in Sources */,
 				E8DA9B1922E728170040EA3A /* Config.swift in Sources */,
 				E8DA9B1322E614B50040EA3A /* UserLineAndCommentModel.swift in Sources */,
 				E86F8C7C22E3100B00F29B6D /* AppDelegate.swift in Sources */,
+				E88815F923827E0B0093FEA8 /* prstatTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
