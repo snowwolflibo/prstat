@@ -10,6 +10,7 @@ import UIKit
 import PromiseKit
 
 class ApiRequest<ModelType> {
+  
     // MARK: - -Promise
     public static func getResponsePromise(forceFetchFromServer: Bool = false, url: String, method: HTTPMethod = .get, body: Parameters? = nil, querys: Parameters? = nil) -> Promise<ModelType> {
         if (!forceFetchFromServer || Config.alwaysUseCache), let data = CacheUtility.getData(url: url) {
