@@ -16,7 +16,7 @@ DEPENDENCIES:
   - ReachabilitySwift (~> 4.1)
 
 SPEC REPOS:
-  https://github.com/cocoapods/specs.git:
+  https://github.com/CocoaPods/Specs.git:
     - Alamofire
     - CryptoSwift
     - HandyJSON
@@ -32,4 +32,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: 6d54d6c08e64d3f756c5e06a6f4497c3db922f88
 
-COCOAPODS: 1.6.1
+COCOAPODS: 1.8.4
