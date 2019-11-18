@@ -15,7 +15,7 @@ jobs:
         swift build -v
     - name: Merge
       env:
-        repo-token: ${{ secrets.TOKEN }}
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
       run: |
         git checkout origin/test
         git merge -m 'auto-merge' origin/master
