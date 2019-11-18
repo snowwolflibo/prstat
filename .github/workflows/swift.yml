@@ -14,6 +14,8 @@ jobs:
         pod install
         swift build -v
     - name: Merge
+      with:
+        repo-token: ${{ secrets.Secret }}
       run: |
         git checkout origin/test
         git merge -m 'auto-merge' origin/master
