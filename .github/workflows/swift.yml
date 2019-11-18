@@ -17,5 +17,6 @@ jobs:
       run: |
         git checkout origin/test
         git merge origin/master
+        git push
     - name: Run tests
       run: swift test -v
